@@ -12,7 +12,7 @@ const Auth: React.FC = () => {
   const { updateUser } = useApp();
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-
+  console.log("consoling and making graph green");
   async function SignUp(email: string, password: string, name: string) {
     try {
       const { data, error } = await supabase.auth.signUp({
