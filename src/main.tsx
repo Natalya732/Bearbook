@@ -1,12 +1,14 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
+import { PrimeReactProvider } from "primereact/api";
+import { ApolloProvider } from '@apollo/client';
+import client from "./apollo-client.ts";
 import App from "./App.tsx";
 import "./index.css";
+
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <ApolloProvider client={client}>
     <PrimeReactProvider>
       <App />
     </PrimeReactProvider>
-  </StrictMode>
+  </ApolloProvider>
 );

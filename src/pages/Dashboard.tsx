@@ -4,6 +4,8 @@ import PostCard from "./PostCard/PostCard";
 import { Loader } from "react-feather";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { GET_ALL_USER } from "../graphql/queries/getApis";
 
 interface Post {
   id: string;
@@ -13,11 +15,16 @@ interface Post {
     imageUrl?: string;
 }
 
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+
+const {loading, error, data} = useQuery(GET_ALL_USER);
+
+console.log("states", {loading, data, error})
 
   useEffect(() => {
     fetchMorePosts();
