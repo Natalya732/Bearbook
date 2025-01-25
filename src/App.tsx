@@ -1,8 +1,22 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { applicationRoutes } from "./routes/applicationRoutes";
+import {
+  createBrowserRouter,
+  RouteObject,
+  RouterProvider,
+} from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile/Profile";
+import Feed from "./pages/Feed/Feed";
+import Auth from "./pages/Auth/Auth";
+
+export const applicationRoutes: RouteObject[] = [
+  { path: "/", element: <Dashboard /> },
+  { path: "/profile", element: <Profile /> },
+  { path: "/feed", element: <Feed /> },
+  {path : "/auth", element : <Auth/>}
+
+];
 
 const myRoutes = createBrowserRouter(applicationRoutes);
-
 
 export default function App() {
   return <RouterProvider router={myRoutes} />;
