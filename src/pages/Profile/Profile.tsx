@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Edit2, GitHub, Linkedin, MapPin, Mail, Link as LinkIcon, Users } from "react-feather";
+import { Edit2, GitHub, Linkedin, MapPin, Mail } from "react-feather";
 import { Button } from "primereact/button";
 import PostCard from "../PostCard/PostCard";
 
