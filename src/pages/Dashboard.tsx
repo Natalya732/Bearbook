@@ -6,27 +6,29 @@ import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_ALL_USER } from "../graphql/queries/getApis";
+import { getUsers } from "@apis/user";
 
 interface Post {
   id: string;
-    userImage: string;
-    username: string;
-    content: string;
-    imageUrl?: string;
+  userImage: string;
+  username: string;
+  content: string;
+  imageUrl?: string;
 }
 
-
-const Dashboard: React.FC = () => {
+export default function Dashboard() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
-const {loading, error, data} = useQuery(GET_ALL_USER);
+  const { loading, error, data } = useQuery(GET_ALL_USER);
 
-console.log("states", {loading, data, error})
+  console.log("states", { loading, data, error });
 
   useEffect(() => {
+    getUsers();
+
     fetchMorePosts();
   }, []);
 
@@ -114,6 +116,4 @@ console.log("states", {loading, data, error})
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
