@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Edit2, GitHub, Linkedin, MapPin, Mail } from "react-feather";
+import { Edit2, GitHub, Linkedin, MapPin, Mail, LogOut } from "react-feather";
 import { Button } from "primereact/button";
 import PostCard from "../PostCard/PostCard";
-
+import { Dialog } from "primereact/dialog";
+import toast from 'react-hot-toast';
 interface ProfileData {
   name: string;
   role: string;
@@ -12,8 +13,8 @@ interface ProfileData {
   linkedin: string;
   bio: string;
   profileImage: string;
-  followers: number;
   following: number;
+  followers: number;
   isFollowing: boolean;
 }
 
@@ -25,6 +26,8 @@ interface Post {
 
 const Profile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [createDialog, setCreateDialog] = useState(false);
+  const [newPost, setNewPost] = useState({ content: '', imageUrl: '' });
   const [profileData, setProfileData] = useState<ProfileData>({
     name: "Nikita Pandey",
     role: "Software Developer",
@@ -59,9 +62,14 @@ const Profile: React.FC = () => {
     }));
   };
 
+  const handleSubmitPost = () => {
+    toast.success("asdfa")
+    setCreateDialog(false);
+    setNewPost({ content: '', imageUrl: '' });
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
-      {/* Cover Photo */}
       <div className="h-64 w-full bg-gradient-to-r from-blue-500 to-purple-600 relative">
         {isEditing && (
           <button className="absolute right-4 top-4 bg-white p-2 rounded-full shadow-lg">
@@ -69,6 +77,48 @@ const Profile: React.FC = () => {
           </button>
         )}
       </div>
+      <div className=" flex gap-2 absolute right-8 top-10 text-white cursor-pointer text-sm items-center" >
+        Logout
+        <LogOut />
+      </div>
+      <Dialog
+        header="Create Post"
+        visible={createDialog}
+        className="p-4 rounded bg-white"
+        style={{ width: '500px' }}
+        onHide={() => setCreateDialog(false)}
+        footer={
+          <div className="flex justify-end gap-4 mt-5">
+            <Button className="p-button-text " label="Cancel" icon="pi pi-times" onClick={() => setCreateDialog(false)} />
+            <Button label="Create Post" className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" icon="pi pi-check" onClick={handleSubmitPost} autoFocus />
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-4 mt-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="content" className="font-medium">Content</label>
+            <textarea
+              id="content"
+              value={newPost.content}
+              onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
+              className="p-2 border rounded-md"
+              rows={4}
+              placeholder="What's on your mind?"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="imageUrl" className="font-medium">Image URL (optional)</label>
+            <input
+              type="text"
+              id="imageUrl"
+              value={newPost.imageUrl}
+              onChange={(e) => setNewPost(prev => ({ ...prev, imageUrl: e.target.value }))}
+              className="p-2 border rounded-md"
+              placeholder="Enter image URL"
+            />
+          </div>
+        </div>
+      </Dialog>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 w-full">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -102,19 +152,16 @@ const Profile: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex gap-2">
+                </div>asdfa]
+                <div className="flex gap-4 text-white">
                   <Button
                     label={profileData.isFollowing ? "Following" : "Follow"}
                     icon={profileData.isFollowing ? "pi pi-check" : "pi pi-plus"}
-                    className={`${profileData.isFollowing ? 'p-button-outlined' : 'p-button-primary'
-                      }`}
                     onClick={handleFollow}
                   />
                   <Button
                     label={isEditing ? "Save Profile" : "Edit Profile"}
                     icon="pi pi-user-edit"
-                    className="p-button-secondary"
                     onClick={() => setIsEditing(!isEditing)}
                   />
                 </div>
@@ -164,7 +211,10 @@ const Profile: React.FC = () => {
 
         {/* Posts Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-6">Posts</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold mb-6">Posts</h2>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" onClick={() => setCreateDialog(true)}>Create Post</button>
+          </div>
           <div className="space-y-6">
             {posts.map(post => (
               <PostCard

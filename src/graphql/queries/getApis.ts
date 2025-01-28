@@ -1,21 +1,12 @@
-import { gql } from "@apollo/client";
-
-
-   export const GET_ALL_USER = gql`
-   query GetAllUsers{
-   users {
-     name
-     }
-    }
+export const query = `
+query {
+  users {
+    id
+    name
+    email
+  }
+}
 `;
 
 
-   export const GET_USER = gql`
-   query GetUser($id: ID!) {
-     user(id: $id) {
-       name
-       email
-       age
-     }
-   }
- `;
+

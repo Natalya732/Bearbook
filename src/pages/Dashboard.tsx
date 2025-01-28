@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import PostCard from "./PostCard/PostCard";
 import { Loader } from "react-feather";
 import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@apollo/client";
-import { GET_ALL_USER } from "../graphql/queries/getApis";
-import { getUsers } from "@apis/user";
+// import { fetchGraphQL } from "@apis/user";
 
 interface Post {
   id: string;
@@ -22,16 +20,17 @@ export default function Dashboard() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
-  const { loading, error, data } = useQuery(GET_ALL_USER);
-
-  console.log("states", { loading, data, error });
 
   useEffect(() => {
-    getUsers();
-
     fetchMorePosts();
   }, []);
 
+  // const response = async ()=> {
+  //   const res = await fetchGraphQL("550e8400-e29b-41d4-a716-446655440001");
+  //   console.log("the new response",res);
+  // }
+  
+  // response();
   const fetchMorePosts = () => {
     setTimeout(() => {
       const newPosts = generateMockPosts(page);
@@ -90,7 +89,7 @@ export default function Dashboard() {
           next={fetchMorePosts}
           hasMore={hasMore}
           loader={
-            <div className="flex justify-center items-center p-4">
+            <div className="flex justify-center items-center p-4 h-screen">
               <Loader className="w-8 h-8 animate-spin text-blue-500" />
             </div>
           }

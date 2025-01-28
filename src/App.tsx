@@ -11,7 +11,9 @@ import Profile from "./pages/Profile/Profile";
 import Feed from "./pages/Feed/Feed";
 import Auth from "./pages/Auth/Auth";
 import Supabase from "@utils/supabase";
+import "primereact/resources/themes/lara-light-cyan/theme.css";
 import AppProvider from "@contexts/AppContext";
+import { Toaster } from "react-hot-toast";
 
 export const applicationRoutes: RouteObject[] = [
   { path: "/", element: <Dashboard /> },
@@ -47,7 +49,8 @@ export default function App() {
 
   return (
     <AppProvider>
-      <RouterProvider router={myRoutes} />
+      <Toaster position="top-right" reverseOrder={false }/>
+        <RouterProvider router={myRoutes} />
     </AppProvider>
   );
 }

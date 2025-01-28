@@ -1,66 +1,143 @@
-import React from 'react';
-import { Button } from 'primereact/button';
+import React, { useState } from 'react';
+import supabase from '../../utils/supabase';
 import { useNavigate } from 'react-router-dom';
-import { Chrome, Lock, ExternalLink } from 'react-feather';
+import toast from 'react-hot-toast';
+import { Loader } from 'react-feather';
 
 const Auth: React.FC = () => {
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [isSignedUp, setIsSignedUp] = useState(false);
 
-    const handleGoogleSignIn = async () => {
+    async function SignUp(email: string, password: string, name: string) {
         try {
-            // Google authentication logic will go here
-            navigate('/profile');
-        } catch (error) {
-            console.error('Error signing in with Google:', error);
+            const { data, error } = await supabase.auth.signUp({
+                email, password,
+                options: {
+                    data: {
+                        name
+                    }
+                }
+            });
+            if (error) {
+                throw error;
+            }
+
+            return {
+                success: true,
+                message: "Signup successful. Please check your email for verification.",
+                user: data.user
+            }
         }
-    };
+        catch (error) {
+            return {
+                success: false,
+                message: error instanceof Error ? error.message : "An error occured"
+            }
+        }
+    }
 
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full bg-white rounded-xl shadow-2xl p-8 space-y-8">
-                <div className="text-center">
-                    <div className="mx-auto w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Lock className="w-8 h-8 text-blue-600" />
+    async function SignIn(email: string, password: string) {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email, password
+            })
+            if (error) throw error;
+            return {
+                success: true,
+                message: "Successfully Signed In",
+                user: data.user,
+                session: data.session
+            }
+        } catch (err) {
+            return {
+                success: false,
+                message: err instanceof Error ? err.message : "An error occured !"
+            }
+        }
+    }
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        let response; if (isSignedUp) {
+            setIsLoading(true);
+            response = await SignIn(email, password);
+        } else {
+            setIsLoading(true);
+            response = await SignUp(email, password, name)
+        }
+        setIsLoading(false);
+        if (!response.success) {
+            toast.error(response.message);
+            return;
+        }
+        toast.success(`${isSignedUp ? 'Signed Up' : 'Signed In'} successfully!`);
+        navigate('/profile');
+        console.log(response);
+    }
+
+    return isLoading ? <div className="flex justify-center items-center p-4 h-screen">
+        <Loader className="w-8 h-8 animate-spin text-blue-500" />
+    </div> : (
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="bg-white p-8 rounded-lg shadow-md w-96">
+                <h2 className="text-2xl font-bold mb-6 text-center">
+                    {isSignedUp ? 'Login' : 'Sign Up'}
+                </h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {!isSignedUp && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Name</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                                required
+                            />
+                        </div>
+                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                            required
+                        />
                     </div>
-                    <h2 className="mt-6 text-3xl font-bold text-gray-900">
-                        Welcome Back
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
-                        Sign in to continue to Social App
-                    </p>
-                </div>
-
-                <div className="space-y-6">
-                    <Button
-                        className="w-full p-button-raised flex items-center border border-gradient-to-br from-blue-500 to-purple-600 justify-center gap-2 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 py-3 rounded-lg transition-colors"
-                        onClick={handleGoogleSignIn}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+                        onClick={handleSubmit}
                     >
-                        <Chrome className="w-5 h-5" />
-                        <span>Continue with Google</span>
-                    </Button>
-
-                </div>
-
-                <div className="text-center text-sm">
-                    <p className="text-gray-600">
-                        By continuing, you agree to our
-                    </p>
-                    <div className="mt-2 space-x-2 text-blue-600">
-                        <a href="#" className="inline-flex items-center hover:text-blue-500">
-                            Terms of Service
-                            <ExternalLink className="ml-1 w-3 h-3" />
-                        </a>
-                        <span className="text-gray-400">•</span>
-                        <a href="#" className="inline-flex items-center hover:text-blue-500">
-                            Privacy Policy
-                            <ExternalLink className="ml-1 w-3 h-3" />
-                        </a>
+                        {isSignedUp ? 'Login' : 'Sign Up'}
+                    </button>
+                </form>
+                <div className="mt-4 text-center">
+                    <div
+                        className="text-blue-500 hover:text-blue-600 cursor-pointer"
+                        onClick={() => setIsSignedUp(prev => !prev)}
+                    >
+                        {isSignedUp
+                            ? "Don't have an account? Sign Up"
+                            : 'Already have an account? Login'}
                     </div>
                 </div>
-            </div>
-
-            <div className="mt-8 text-center text-sm text-white">
-                <p>Need help? Contact our support team</p>
             </div>
         </div>
     );
