@@ -23,9 +23,9 @@ export const applicationRoutes: RouteObject[] = [
 ];
 
 const myRoutes = createBrowserRouter(applicationRoutes);
-
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
+  const [signedUp, setSignedUp] = useState<boolean>(false);
 
   function handleSupabaseAuth() {
     Supabase.auth.getSession().then(({ data: { session } }) => {
@@ -36,6 +36,7 @@ export default function App() {
       data: { subscription },
     } = Supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      session ? setSignedUp(true) : setSignedUp(false);
     });
 
     return subscription;
@@ -47,10 +48,12 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  return (
+  return !session ? (
+    <Auth isSignedUp={signedUp} setIsSignedUp={setSignedUp} />
+  ) : (
     <AppProvider>
-      <Toaster position="top-right" reverseOrder={false }/>
-        <RouterProvider router={myRoutes} />
+      <Toaster position="top-right" reverseOrder={false} />
+      <RouterProvider router={myRoutes} />
     </AppProvider>
   );
 }
