@@ -1,26 +1,32 @@
 import { User } from "@supabase/supabase-js";
-import { PropsWithChildren, useState } from "react";
-import { createContext } from "vm";
+import { createContext, useContext, useState } from "react";
 
-interface ContextValue {
-  user: null | User;
+interface AuthContextType {
+  user: User | null;
   updateUser: (user: User | null) => void;
 }
 
-const AppContext = createContext<ContextValue>({} as ContextValue);
+const AppContext = createContext<AuthContextType | undefined>(undefined);
 
-const AppProvider: React.FC<ContextValue> = ({
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
-}: PropsWithChildren) => {
+}) => {
   const [user, setUser] = useState<User | null>(null);
 
   function updateUser(user: User | null) {
     setUser(user);
   }
-
   return (
     <AppContext.Provider value={{ user, updateUser }}>
       {children}
     </AppContext.Provider>
   );
+};
+
+export const useApp = () => {
+  const context = useContext(AppContext);
+
+  if (!context) throw new Error("useApp must be used within AppProvider");
+
+  return context;
 };

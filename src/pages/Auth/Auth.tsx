@@ -1,21 +1,17 @@
 import React, { useState } from "react";
 import supabase from "../../utils/supabase";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Loader } from "react-feather";
 import { createUserProfile } from "@apis/user";
+import { useApp } from "@contexts/AppContext";
 
-type AuthProps = {
-  isSignedUp: boolean;
-  setIsSignedUp: React.Dispatch<React.SetStateAction<boolean>>;
-};
-
-const Auth: React.FC<AuthProps> = ({ isSignedUp, setIsSignedUp }) => {
+const Auth: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [isSignedUp, setIsSignedUp] = useState(true);
+  const { updateUser } = useApp();
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  // const [isSignedUp, setIsSignedUp] = useState(false);
 
   async function SignUp(email: string, password: string, name: string) {
     try {
@@ -83,11 +79,11 @@ const Auth: React.FC<AuthProps> = ({ isSignedUp, setIsSignedUp }) => {
       return;
     }
     toast.success(`${isSignedUp ? "Signed Up" : "Signed In"} successfully!`);
-    // navigate("/profile");
-    console.log(response.user && response.user.id);
 
-    response.user &&
-      (await createUserProfile(response.user.id, email, createdAt));
+    if (response.user) {
+      updateUser(response.user);
+      await createUserProfile(response.user.id, email, createdAt);
+    }
   }
 
   return isLoading ? (

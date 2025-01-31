@@ -44,12 +44,7 @@ const Profile: React.FC = () => {
     following: 567,
     isFollowing: false,
   });
-  console.log(
-    "data i want",
-    Supabase.auth.getUser().then((data) => {
-      return data;
-    })
-  );
+
   const [posts] = useState<Post[]>([
     {
       id: "1",
