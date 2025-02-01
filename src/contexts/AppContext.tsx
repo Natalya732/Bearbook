@@ -12,7 +12,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<User | null>(null);
-
   function updateUser(user: User | null) {
     setUser(user);
   }

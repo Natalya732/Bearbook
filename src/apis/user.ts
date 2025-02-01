@@ -1,5 +1,36 @@
 import envs from "@/configs/envs";
-import Supabase, { SUPABASE_GRAPHQL_ENDPOINT } from "@utils/supabase";
+import { SUPABASE_GRAPHQL_ENDPOINT } from "@utils/supabase";
+
+export async function getUserDetails(userId: string) {
+  const query = ` 
+    query($userId: UUID!) {  # ✅ Define the type properly
+      userCollection(filter: { id: { eq: $userId } }) {
+        edges {
+          node {
+            id
+            followers
+            bio
+            github
+          }
+        }
+      }
+    }
+  `;
+
+  const variables = { userId };
+
+  const response = await fetch(SUPABASE_GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: envs.SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const result = await response.json();
+  return result.data.userCollection.edges;
+}
 
 export async function fetchGraphQL(userId: string) {
   const query = `
@@ -18,6 +49,7 @@ export async function fetchGraphQL(userId: string) {
   `;
 
   const variables = { userId };
+  // 550e8400-e29b-41d4-a716-446655440000
 
   const response = await fetch(SUPABASE_GRAPHQL_ENDPOINT, {
     method: "POST",
@@ -32,7 +64,12 @@ export async function fetchGraphQL(userId: string) {
 
   return result.data.postsCollection.edges;
 }
-export async function createUserProfile(id: string, email: string, created_at: string) {
+
+export async function createUserProfile(
+  id: string,
+  email: string,
+  created_at: string
+) {
   try {
     const mutation = `
       mutation createUser($id: uuid!, $email: String!, $created_at: timestamptz!) {
@@ -63,7 +100,6 @@ export async function createUserProfile(id: string, email: string, created_at: s
     });
 
     const result = await response.json();
-    console.log("user", result);
 
     return result;
   } catch (err) {
@@ -71,4 +107,3 @@ export async function createUserProfile(id: string, email: string, created_at: s
     throw err;
   }
 }
-

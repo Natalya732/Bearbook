@@ -1,89 +1,51 @@
+import supabase from "@utils/supabase";
 import React, { useState } from "react";
-import supabase from "../../utils/supabase";
-import toast from "react-hot-toast";
 import { Loader } from "react-feather";
-import { createUserProfile } from "@apis/user";
-import { useApp } from "@contexts/AppContext";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Auth: React.FC = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [isSignedUp, setIsSignedUp] = useState(true);
-  const { updateUser } = useApp();
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  console.log("consoling and making graph green");
-  async function SignUp(email: string, password: string, name: string) {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-        },
-      });
-      if (error) {
-        throw error;
-      }
 
-      return {
-        success: true,
-        message: "Signup successful. Please check your email for verification.",
-        user: data.user,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: error instanceof Error ? error.message : "An error occured",
-      };
-    }
+  // ******************************* Integration ***************************************
+
+  async function signUp() {
+    let { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) toast.error(error.message);
+
+    console.log("signUp", data);
+    return data;
   }
 
-  async function SignIn(email: string, password: string) {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      return {
-        success: true,
-        message: "Successfully Signed In",
-        user: data.user,
-        session: data.session,
-      };
-    } catch (err) {
-      return {
-        success: false,
-        message: err instanceof Error ? err.message : "An error occured !",
-      };
-    }
+  async function signIn() {
+    let { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) toast.error(error.message);
+
+    console.log("signin", data);
+    return data;
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
-    let response;
-    const createdAt = new Date().toISOString();
-    if (isSignedUp) {
-      setIsLoading(true);
-      response = await SignIn(email, password);
-    } else {
-      setIsLoading(true);
-      response = await SignUp(email, password, name);
-    }
+    const selectedFn = isSignedUp ? signIn : signUp;
+    setIsLoading(true);
+    const res = selectedFn();
     setIsLoading(false);
-    if (!response.success) {
-      toast.error(response.message);
-      return;
-    }
-    toast.success(`${isSignedUp ? "Signed Up" : "Signed In"} successfully!`);
-
-    if (response.user) {
-      updateUser(response.user);
-      await createUserProfile(response.user.id, email, createdAt);
-    }
+    if (!res) return;
+    navigate("/");
+    console.log("res", res);
   }
 
   return isLoading ? (
@@ -138,7 +100,6 @@ const Auth: React.FC = () => {
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
-            onClick={handleSubmit}
           >
             {isSignedUp ? "Login" : "Sign Up"}
           </button>

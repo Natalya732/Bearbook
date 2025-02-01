@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Edit2, GitHub, Linkedin, MapPin, Mail, LogOut } from "react-feather";
 import { Button } from "primereact/button";
 import PostCard from "../PostCard/PostCard";
@@ -6,6 +6,9 @@ import { Dialog } from "primereact/dialog";
 import toast from "react-hot-toast";
 import Supabase from "@utils/supabase";
 import { useNavigate } from "react-router-dom";
+import { useApp } from "@contexts/AppContext";
+import { getUserDetails } from "@apis/user";
+import supabase from "@utils/supabase";
 interface ProfileData {
   name: string;
   role: string;
@@ -27,6 +30,7 @@ interface Post {
 }
 
 const Profile: React.FC = () => {
+  const { user } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
   const [createDialog, setCreateDialog] = useState(false);
@@ -45,6 +49,20 @@ const Profile: React.FC = () => {
     isFollowing: false,
   });
 
+  // ******************** let us write a fetch to get users********************
+
+  const getUsers = async () => {
+    let { data, error } = await Supabase.from("User").select("*");
+    if (error) {
+      console.log("error", error);
+    }
+
+    console.log("Hie This is data", data);
+  };
+  useEffect(() => {
+    console.log("indie useEffect");
+    getUsers();
+  }, []);
   const [posts] = useState<Post[]>([
     {
       id: "1",
@@ -67,7 +85,6 @@ const Profile: React.FC = () => {
   };
 
   const handleSubmitPost = () => {
-    toast.success("asdfa");
     setCreateDialog(false);
     setNewPost({ content: "", imageUrl: "" });
   };
@@ -77,27 +94,47 @@ const Profile: React.FC = () => {
     error?: string;
   }
 
-  async function signOut(): Promise<SignOutResponse> {
+  async function fetchUser() {
     try {
-      const { error } = await Supabase.auth.signOut();
-      if (error) {
-        return {
-          success: false,
-          message: "Failed to sign out",
-          error: error.message,
-        };
-      }
-      return {
-        success: true,
-        message: "Signed out successfully",
-      };
+      // const response = await getUserDetails(user?.user_metadata.id);
+      // console.log("resposne", response);
     } catch (err) {
-      return {
-        success: false,
-        message: "An error occurred",
-        error: err instanceof Error ? err.message : "Unknown error",
-      };
+      console.log("error", err);
     }
+  }
+
+  useEffect(() => {
+    fetchUser();
+  });
+
+  // async function signOut(): Promise<SignOutResponse> {
+  //   try {
+  //     const { error } = await Supabase.auth.signOut();
+  //     if (error) {
+  //       return {
+  //         success: false,
+  //         message: "Failed to sign out",
+  //         error: error.message,
+  //       };
+  //     }
+  //     return {
+  //       success: true,
+  //       message: "Signed out successfully",
+  //     };
+  //   } catch (err) {
+  //     return {
+  //       success: false,
+  //       message: "An error occurred",
+  //       error: err instanceof Error ? err.message : "Unknown error",
+  //     };
+  //   }
+  // }
+
+  async function signOut() {
+    const res = await supabase.auth.signOut();
+    return res;
+
+    console.log("response", res);
   }
 
   return (
@@ -116,7 +153,6 @@ const Profile: React.FC = () => {
             toast.error("Something went wrong");
             return;
           }
-          navigate("/auth");
         }}
         className=" flex gap-2 absolute right-8 top-10 text-white cursor-pointer text-sm items-center"
       >

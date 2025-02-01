@@ -7,12 +7,11 @@ export enum TABLES {
   POSTS = "Posts",
 }
 
-const Supabase = createClient(
+const supabase = createClient(
   envs.SUPABASE_PROJECT_URL,
   envs.SUPABASE_ANON_KEY
 );
 
 export const SUPABASE_GRAPHQL_ENDPOINT = `${envs.SUPABASE_PROJECT_URL}/graphql/v1`;
 
-
-export default Supabase;
+export default supabase;

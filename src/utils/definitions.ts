@@ -5,3 +5,9 @@ export interface User {
   createdAt: string;
   id: number;
 }
+
+export interface SignUpProps {
+  email: string;
+  id: string;
+  name: string;
+}
