@@ -4,10 +4,6 @@ import { Button } from "primereact/button";
 import PostCard from "../PostCard/PostCard";
 import { Dialog } from "primereact/dialog";
 import toast from "react-hot-toast";
-import Supabase from "@utils/supabase";
-import { useNavigate } from "react-router-dom";
-import { useApp } from "@contexts/AppContext";
-import { getUserDetails } from "@apis/user";
 import supabase from "@utils/supabase";
 interface ProfileData {
   name: string;
@@ -30,9 +26,7 @@ interface Post {
 }
 
 const Profile: React.FC = () => {
-  const { user } = useApp();
   const [isEditing, setIsEditing] = useState(false);
-  const navigate = useNavigate();
   const [createDialog, setCreateDialog] = useState(false);
   const [newPost, setNewPost] = useState({ content: "", imageUrl: "" });
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -51,18 +45,7 @@ const Profile: React.FC = () => {
 
   // ******************** let us write a fetch to get users********************
 
-  const getUsers = async () => {
-    let { data, error } = await Supabase.from("User").select("*");
-    if (error) {
-      console.log("error", error);
-    }
 
-    console.log("Hie This is data", data);
-  };
-  useEffect(() => {
-    console.log("indie useEffect");
-    getUsers();
-  }, []);
   const [posts] = useState<Post[]>([
     {
       id: "1",
@@ -88,16 +71,9 @@ const Profile: React.FC = () => {
     setCreateDialog(false);
     setNewPost({ content: "", imageUrl: "" });
   };
-  interface SignOutResponse {
-    success: boolean;
-    message: string;
-    error?: string;
-  }
 
   async function fetchUser() {
     try {
-      // const response = await getUserDetails(user?.user_metadata.id);
-      // console.log("resposne", response);
     } catch (err) {
       console.log("error", err);
     }
@@ -107,34 +83,9 @@ const Profile: React.FC = () => {
     fetchUser();
   });
 
-  // async function signOut(): Promise<SignOutResponse> {
-  //   try {
-  //     const { error } = await Supabase.auth.signOut();
-  //     if (error) {
-  //       return {
-  //         success: false,
-  //         message: "Failed to sign out",
-  //         error: error.message,
-  //       };
-  //     }
-  //     return {
-  //       success: true,
-  //       message: "Signed out successfully",
-  //     };
-  //   } catch (err) {
-  //     return {
-  //       success: false,
-  //       message: "An error occurred",
-  //       error: err instanceof Error ? err.message : "Unknown error",
-  //     };
-  //   }
-  // }
-
   async function signOut() {
     const res = await supabase.auth.signOut();
     return res;
-
-    console.log("response", res);
   }
 
   return (
