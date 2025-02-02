@@ -6,6 +6,7 @@ import { Dialog } from "primereact/dialog";
 import toast from "react-hot-toast";
 import supabase from "@utils/supabase";
 import { useApp } from "@contexts/AppContext";
+
 interface ProfileData {
   id: string;
   name: string;
@@ -29,7 +30,8 @@ interface Post {
 
 const Profile: React.FC = () => {
   const { user } = useApp();
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedProfile, setEditedProfile] = useState<ProfileData | null>(null);
   const [createDialog, setCreateDialog] = useState(false);
   const [newPost, setNewPost] = useState({ content: "", imageUrl: "" });
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -79,6 +81,7 @@ const Profile: React.FC = () => {
           ...prev,
           ...data,
         }));
+        setEditedProfile(data);
       }
       return data;
     } catch (err) {
@@ -101,6 +104,36 @@ const Profile: React.FC = () => {
   const handleSubmitPost = () => {
     setCreateDialog(false);
     setNewPost({ content: "", imageUrl: "" });
+  };
+
+  const handleEditProfile = async () => {
+    if (!editedProfile) return;
+
+    try {
+      const { error } = await supabase
+        .from("User")
+        .update({
+          name: editedProfile.name,
+          role: editedProfile.role,
+          location: editedProfile.location,
+          bio: editedProfile.bio,
+          github: editedProfile.github,
+          linkedin: editedProfile.linkedin,
+          email: editedProfile.email,
+        })
+        .eq("id", user?.id);
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      setProfileData(editedProfile);
+      setIsEditing(false);
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      toast.error("Failed to update profile");
+    }
   };
 
   async function signOut() {
@@ -185,7 +218,7 @@ const Profile: React.FC = () => {
               onChange={(e) =>
                 setNewPost((prev) => ({ ...prev, imageUrl: e.target.value }))
               }
-              className="p-2 border rounded-md"
+              className="p-2 border border-white rounded-md"
               placeholder="Enter image URL"
             />
           </div>
@@ -204,33 +237,82 @@ const Profile: React.FC = () => {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
-                    {profileData.name}
-                  </h1>
-                  <p className="text-lg text-gray-600">{profileData.role}</p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editedProfile?.name || ""}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+
+                        if (newValue.length > 100) {
+                          toast.error("More than 100 characters not allowed.");
+                          return;
+                        }
+
+                        setEditedProfile((prev) =>
+                          prev ? { ...prev, name: newValue } : null
+                        );
+                      }}
+                      className="text-3xl font-bold border-white mr-2 border rounded px-2"
+                    />
+                  ) : (
+                    <h1 className="text-3xl font-bold text-gray-900">
+                      {profileData.name}
+                    </h1>
+                  )}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editedProfile?.role || ""}
+                      onChange={(e) =>
+                        setEditedProfile((prev) =>
+                          prev ? { ...prev, role: e.target.value } : null
+                        )
+                      }
+                      className="text-lg text-gray-600 border-white border rounded px-2 mt-2"
+                    />
+                  ) : (
+                    <p className="text-lg text-gray-600">{profileData.role}</p>
+                  )}
                   <div className="flex items-center gap-6 text-gray-600 mt-3">
                     <div className="flex items-center gap-2">
                       <MapPin size={16} />
-                      <span>{profileData.location}</span>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedProfile?.location || ""}
+                          onChange={(e) =>
+                            setEditedProfile((prev) =>
+                              prev
+                                ? { ...prev, location: e.target.value }
+                                : null
+                            )
+                          }
+                          className="px-2 vzc"
+                        />
+                      ) : (
+                        <span>{profileData.location}</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
                         <span className="font-semibold">
-                          {profileData.followers}
+                          {profileData.followers || 0}
                         </span>
                         <span className="text-gray-600">followers</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="font-semibold">
-                          {profileData.following}
+                          {profileData.following || 0}
                         </span>
                         <span className="text-gray-600">following</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-4 text-white">
+                <div className="flex gap-4 w-60 text-white">
                   <Button
+                    className="w-full border-0"
                     label={profileData.isFollowing ? "Following" : "Follow"}
                     icon={
                       profileData.isFollowing ? "pi pi-check" : "pi pi-plus"
@@ -238,15 +320,38 @@ const Profile: React.FC = () => {
                     onClick={handleFollow}
                   />
                   <Button
+                    className="flex w-full"
                     label={isEditing ? "Save Profile" : "Edit Profile"}
                     icon="pi pi-user-edit"
-                    onClick={() => setIsEditing(!isEditing)}
+                    onClick={() => {
+                      if (isEditing) {
+                        handleEditProfile();
+                      } else {
+                        setIsEditing(true);
+                      }
+                    }}
                   />
                 </div>
               </div>
 
-              <div className="mt-6">
-                <p className="text-gray-700">{profileData.bio}</p>
+              <div className="my-10">
+                {isEditing ? (
+                  <textarea
+                    value={editedProfile?.bio || ""}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (newValue.length > 250)
+                        toast.error("Word length should not exceed 250 words.");
+                      setEditedProfile((prev) =>
+                        prev ? { ...prev, bio: e.target.value } : null
+                      );
+                    }}
+                    className="w-full text-gray-700 border rounded p-2"
+                    rows={4}
+                  />
+                ) : (
+                  <p className="text-gray-700">{profileData.bio}</p>
+                )}
               </div>
             </div>
           </div>
@@ -256,30 +361,73 @@ const Profile: React.FC = () => {
               <h2 className="text-xl font-semibold">Contact Information</h2>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-gray-600" />
-                <span className="text-gray-700">{profileData.email}</span>
+                {isEditing ? (
+                  <input
+                    type="email"
+                    value={editedProfile?.email || ""}
+                    onChange={(e) =>
+                      setEditedProfile((prev) =>
+                        prev ? { ...prev, email: e.target.value } : null
+                      )
+                    }
+                    className="border rounded px-2"
+                  />
+                ) : (
+                  <span className="text-gray-700">{profileData.email}</span>
+                )}
               </div>
             </div>
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Social Links</h2>
               <div className="space-y-2">
-                <a
-                  href={`https://${profileData.github}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
+                <div className="flex items-center gap-2">
                   <GitHub size={16} />
-                  {profileData.github}
-                </a>
-                <a
-                  href={`https://${profileData.linkedin}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editedProfile?.github || ""}
+                      onChange={(e) =>
+                        setEditedProfile((prev) =>
+                          prev ? { ...prev, github: e.target.value } : null
+                        )
+                      }
+                      className="border rounded px-2"
+                    />
+                  ) : (
+                    <a
+                      href={`https://${profileData.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {profileData.github}
+                    </a>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
                   <Linkedin size={16} />
-                  {profileData.linkedin}
-                </a>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editedProfile?.linkedin || ""}
+                      onChange={(e) =>
+                        setEditedProfile((prev) =>
+                          prev ? { ...prev, linkedin: e.target.value } : null
+                        )
+                      }
+                      className="border rounded px-2"
+                    />
+                  ) : (
+                    <a
+                      href={`https://${profileData.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {profileData.linkedin}
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
