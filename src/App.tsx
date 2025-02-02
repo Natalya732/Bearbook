@@ -4,7 +4,6 @@ import {
   RouteObject,
   RouterProvider,
 } from "react-router-dom";
-
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile/Profile";
 import Feed from "./pages/Feed/Feed";
@@ -16,6 +15,7 @@ import { useEffect, useState } from "react";
 import supabase from "@utils/supabase";
 import { Session } from "@supabase/supabase-js";
 
+console.log("asdfa")
 const ProtectedRoute: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   useEffect(() => {
@@ -43,6 +43,7 @@ export const applicationRoutes: RouteObject[] = [
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/profile", element: <Profile /> },
       { path: "/feed", element: <Feed /> },
+      { path: "/auth", element: <Auth /> },
     ],
   },
 ];

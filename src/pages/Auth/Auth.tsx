@@ -1,3 +1,4 @@
+import { useApp } from "@contexts/AppContext";
 import supabase from "@utils/supabase";
 import React, { useState } from "react";
 import { Loader } from "react-feather";
@@ -6,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
+  const { updateUser } = useApp();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [isSignedUp, setIsSignedUp] = useState(true);
@@ -15,26 +17,70 @@ const Auth: React.FC = () => {
   // ******************************* Integration ***************************************
 
   async function signUp() {
-    let { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      let { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) toast.error(error.message);
+      if (error) {
+        toast.error(error.message);
+        return null;
+      }
 
-    console.log("signUp", data);
-    return data;
+      if (!data?.user) {
+        toast.error("User signup failed. Please try again.");
+        return null;
+      }
+
+      if (data?.user) {
+        const { data: userData, error: userInsertError } = await supabase
+          .from("User")
+          .insert([
+            {
+              id: data.user.id,
+              created_at: data.user.created_at,
+              email: data.user.email,
+              name: name,
+            },
+          ])
+          .select();
+
+        if (userInsertError) {
+          toast.error(userInsertError.message);
+          return null;
+        }
+        updateUser(data?.user);
+        return userData;
+      }
+      return null;
+    } catch (err) {
+      console.error("Unexpected Error", err);
+      toast.error("Something went wrong.Please try again.");
+      return null;
+    }
   }
 
   async function signIn() {
-    let { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) toast.error(error.message);
+    try {
+      let { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    console.log("signin", data);
-    return data;
+      if (error) {
+        toast.error(error.message);
+        return null;
+      }
+
+      updateUser(data?.user);
+
+      return null;
+    } catch (err) {
+      console.log("Unexpected Error", err);
+      toast.error("Something went wrong. Please try again.");
+      return null;
+    }
   }
 
   function handleSubmit(e: React.SyntheticEvent) {
@@ -44,8 +90,7 @@ const Auth: React.FC = () => {
     const res = selectedFn();
     setIsLoading(false);
     if (!res) return;
-    navigate("/");
-    console.log("res", res);
+    navigate("/profile");
   }
 
   return isLoading ? (

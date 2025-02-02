@@ -5,7 +5,9 @@ import PostCard from "../PostCard/PostCard";
 import { Dialog } from "primereact/dialog";
 import toast from "react-hot-toast";
 import supabase from "@utils/supabase";
+import { useApp } from "@contexts/AppContext";
 interface ProfileData {
+  id: string;
   name: string;
   role: string;
   location: string;
@@ -26,25 +28,24 @@ interface Post {
 }
 
 const Profile: React.FC = () => {
-  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useApp();
+  const [isEditing, setIsEditing] = useState(true);
   const [createDialog, setCreateDialog] = useState(false);
   const [newPost, setNewPost] = useState({ content: "", imageUrl: "" });
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: "Nikita Pandey",
-    role: "Software Developer",
-    location: "India",
-    email: "nikita@example.com",
-    github: "github.com/nikita",
-    linkedin: "linkedin.com/in/nikita",
-    bio: "Passionate software developer with expertise in React and TypeScript.",
-    profileImage: "https://via.placeholder.com/150",
-    followers: 1234,
-    following: 567,
+    id: "",
+    name: "",
+    role: "",
+    location: "",
+    email: "",
+    github: "",
+    linkedin: "",
+    bio: "",
+    profileImage: "",
+    followers: 0,
+    following: 0,
     isFollowing: false,
   });
-
-  // ******************** let us write a fetch to get users********************
-
 
   const [posts] = useState<Post[]>([
     {
@@ -59,6 +60,36 @@ const Profile: React.FC = () => {
     },
   ]);
 
+  // ************************** integration ***************************
+
+  async function getUserProfile(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from("User")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        toast.error(error.message);
+        return null;
+      }
+      if (data) {
+        setProfileData((prev) => ({
+          ...prev,
+          ...data,
+        }));
+      }
+      return data;
+    } catch (err) {
+      let errorMsg =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong fetching User Profile";
+      toast.error(errorMsg);
+    }
+  }
+
   const handleFollow = () => {
     setProfileData((prev) => ({
       ...prev,
@@ -72,43 +103,36 @@ const Profile: React.FC = () => {
     setNewPost({ content: "", imageUrl: "" });
   };
 
-  async function fetchUser() {
-    try {
-    } catch (err) {
-      console.log("error", err);
-    }
-  }
-
-  useEffect(() => {
-    fetchUser();
-  });
-
   async function signOut() {
     const res = await supabase.auth.signOut();
     return res;
   }
 
+  useEffect(() => {
+    getUserProfile(user ? user?.id : "");
+  }, []);
+
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       <div className="h-64 w-full bg-gradient-to-r from-blue-500 to-purple-600 relative">
         {isEditing && (
-          <button className="absolute right-4 top-4 bg-white p-2 rounded-full shadow-lg">
+          <button className="absolute right-52 top-52 bg-white p-2 rounded-full shadow-lg">
             <Edit2 size={20} className="text-gray-700" />
           </button>
         )}
-      </div>
-      <div
-        onClick={async () => {
-          const res = await signOut();
-          if (!res) {
-            toast.error("Something went wrong");
-            return;
-          }
-        }}
-        className=" flex gap-2 absolute right-8 top-10 text-white cursor-pointer text-sm items-center"
-      >
-        Logout
-        <LogOut />
+        <div
+          onClick={async () => {
+            const res = await signOut();
+            if (!res) {
+              toast.error("Something went wrong");
+              return;
+            }
+          }}
+          className=" flex gap-2 absolute right-8 top-10 text-white cursor-pointer text-sm items-center"
+        >
+          Logout
+          <LogOut />
+        </div>
       </div>
       <Dialog
         header="Create Post"
@@ -168,16 +192,14 @@ const Profile: React.FC = () => {
         </div>
       </Dialog>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-32 w-full">
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex items-start gap-6 mb-6">
-            <div className="relative">
-              <img
-                src={profileData.profileImage}
-                alt="Profile"
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-              />
-            </div>
+      <div className="px-44 absolute top-32 w-full ">
+        <div className="bg-transparent rounded-lg shadow-lg p-6 mb-6">
+          <div className="flex items-start gap-6">
+            <img
+              src={profileData.profileImage}
+              alt="Profile"
+              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+            />
 
             <div className="flex-1">
               <div className="flex justify-between items-start">
@@ -196,18 +218,17 @@ const Profile: React.FC = () => {
                         <span className="font-semibold">
                           {profileData.followers}
                         </span>
-                        <span className="text-gray-500">followers</span>
+                        <span className="text-gray-600">followers</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="font-semibold">
                           {profileData.following}
                         </span>
-                        <span className="text-gray-500">following</span>
+                        <span className="text-gray-600">following</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                asdfa]
                 <div className="flex gap-4 text-white">
                   <Button
                     label={profileData.isFollowing ? "Following" : "Follow"}
@@ -224,19 +245,17 @@ const Profile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Bio Section */}
               <div className="mt-6">
                 <p className="text-gray-700">{profileData.bio}</p>
               </div>
             </div>
           </div>
 
-          {/* Contact and Social Links */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Contact Information</h2>
               <div className="flex items-center gap-2">
-                <Mail size={16} className="text-gray-500" />
+                <Mail size={16} className="text-gray-600" />
                 <span className="text-gray-700">{profileData.email}</span>
               </div>
             </div>
