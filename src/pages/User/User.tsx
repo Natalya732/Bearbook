@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@contexts/AppContext";
-import { ProfileData } from "@utils/definitions";
+import { Post, ProfileData } from "@utils/definitions";
 import supabase from "@utils/supabase";
 import { GitHub, Linkedin, Loader, LogOut, Mail, MapPin } from "react-feather";
 import toast from "react-hot-toast";
 import EditComponent from "./EditUser";
+import PostCard from "@pages/PostCard/PostCard";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
 
 const LoaderProfile = () => {
   return (
@@ -16,9 +19,11 @@ const LoaderProfile = () => {
 
 export default function User() {
   const { user } = useApp();
-  const imgRef = useRef(null);
+  const imgRef = useRef<HTMLInputElement>(null);
+
   const [isEditing, setIsEditing] = useState(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [createDialog, setCreateDialog] = useState<boolean>(false);
 
   const profileObject = {
     id: "",
@@ -38,6 +43,18 @@ export default function User() {
   const [editedProfileData, setEditedProfileData] =
     useState<ProfileData>(profileObject);
   const [profileData, setProfileData] = useState<ProfileData>(profileObject);
+  const [posts] = useState<Post[]>([
+    {
+      id: "1",
+      content: "Just launched my new React project! Check it out ",
+      imageUrl: "https://via.placeholder.com/600x400",
+    },
+    {
+      id: "2",
+      content:
+        "Learning TypeScript has been an amazing journey. Here's what I've learned so far...",
+    },
+  ]);
 
   //   ******************************* Integration *****************************
   async function getUserProfile(userId: string) {
@@ -110,7 +127,7 @@ export default function User() {
   useEffect(() => {
     getUserProfile(user ? user.id : "");
   }, []);
-
+  console.log("ed", editedProfileData.profileImage, profileData.profileImage);
   return isLoading ? (
     <LoaderProfile />
   ) : (
@@ -122,7 +139,6 @@ export default function User() {
             onClick={() => {
               setIsEditing((prev) => !prev);
               if (isEditing) {
-                console.log("vlue", isEditing);
                 handleEditProfile();
               }
             }}
@@ -134,12 +150,33 @@ export default function User() {
         <div className="px-36 w-full">
           <div className="profile px-12 p-4 h-fit mt-32 rounded shadow-lg">
             <div className="flex gap-6">
-              <div className="image-picker">
+              <div
+                className="image-picker"
+                onClick={() => imgRef.current && imgRef.current?.click()}
+              >
                 <img
-                  src={profileData.profileImage}
+                  src={
+                    isEditing
+                      ? editedProfileData.profileImage
+                      : profileData.profileImage
+                  }
                   className="h-36 w-36 border-white border-8 rounded-full"
                 ></img>
-                <input type="file" ref={imgRef} style={{ display: "none" }} />
+                <input
+                  type="file"
+                  ref={imgRef}
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    if (!isEditing) return;
+                    const newFile = e.target.files;
+                    if (newFile && newFile.length) {
+                      setEditedProfileData((prev) => ({
+                        ...prev,
+                        profileImage: URL.createObjectURL(newFile[0]),
+                      }));
+                    }
+                  }}
+                />
               </div>
               <div className="flex flex-col w-full">
                 <div className="flex justify-between text-white">
@@ -242,6 +279,31 @@ export default function User() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Posts Section */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold mb-6">Posts</h2>
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            onClick={() => setCreateDialog(true)}
+          >
+            Create Post
+          </button>
+        </div>
+        <div className="space-y-6">
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              id={post.id}
+              userImage={profileData.profileImage}
+              username={profileData.name}
+              content={post.content}
+              imageUrl={post.imageUrl}
+            />
+          ))}
         </div>
       </div>
     </div>
