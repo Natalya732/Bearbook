@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Edit2, GitHub, Linkedin, MapPin, Mail, LogOut } from "react-feather";
+import {
+  Edit2,
+  GitHub,
+  MapPin,
+  Mail,
+  LogOut,
+  Loader,
+  Linkedin,
+} from "react-feather";
 import { Button } from "primereact/button";
 import PostCard from "../PostCard/PostCard";
 import { Dialog } from "primereact/dialog";
 import toast from "react-hot-toast";
 import supabase from "@utils/supabase";
 import { useApp } from "@contexts/AppContext";
+import { getCountries } from "@utils/api";
+import { Dropdown } from "primereact/dropdown";
 
 interface ProfileData {
   id: string;
@@ -14,7 +24,7 @@ interface ProfileData {
   location: string;
   email: string;
   github: string;
-  linkedin: string;
+  linkedIn: string;
   bio: string;
   profileImage: string;
   following: number;
@@ -30,7 +40,9 @@ interface Post {
 
 const Profile: React.FC = () => {
   const { user } = useApp();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState<Boolean>(false);
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
+  const [countries, setCountries] = useState<String[]>([]);
   const [editedProfile, setEditedProfile] = useState<ProfileData | null>(null);
   const [createDialog, setCreateDialog] = useState(false);
   const [newPost, setNewPost] = useState({ content: "", imageUrl: "" });
@@ -41,7 +53,7 @@ const Profile: React.FC = () => {
     location: "",
     email: "",
     github: "",
-    linkedin: "",
+    linkedIn: "",
     bio: "",
     profileImage: "",
     followers: 0,
@@ -66,12 +78,13 @@ const Profile: React.FC = () => {
 
   async function getUserProfile(userId: string) {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from("User")
         .select("*")
         .eq("id", userId)
         .single();
-
+      setIsLoading(false);
       if (error) {
         toast.error(error.message);
         return null;
@@ -108,8 +121,8 @@ const Profile: React.FC = () => {
 
   const handleEditProfile = async () => {
     if (!editedProfile) return;
-
     try {
+      setIsLoading(true);
       const { error } = await supabase
         .from("User")
         .update({
@@ -118,11 +131,11 @@ const Profile: React.FC = () => {
           location: editedProfile.location,
           bio: editedProfile.bio,
           github: editedProfile.github,
-          linkedin: editedProfile.linkedin,
+          linkedIn: editedProfile.linkedIn,
           email: editedProfile.email,
         })
         .eq("id", user?.id);
-
+      setIsLoading(false);
       if (error) {
         toast.error(error.message);
         return;
@@ -137,15 +150,26 @@ const Profile: React.FC = () => {
   };
 
   async function signOut() {
+    setIsLoading(true);
     const res = await supabase.auth.signOut();
+    setIsLoading(false);
     return res;
   }
 
   useEffect(() => {
+    async function fetchCountries() {
+      const data = await getCountries();
+      setCountries(data);
+    }
+    fetchCountries();
     getUserProfile(user ? user?.id : "");
   }, []);
 
-  return (
+  return isLoading ? (
+    <div className="flex justify-center items-center p-4 h-screen">
+      <Loader className="w-8 h-8 animate-spin text-blue-500" />
+    </div>
+  ) : (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       <div className="h-64 w-full bg-gradient-to-r from-blue-500 to-purple-600 relative">
         {isEditing && (
@@ -228,11 +252,29 @@ const Profile: React.FC = () => {
       <div className="px-44 absolute top-32 w-full ">
         <div className="bg-transparent rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-start gap-6">
-            <img
-              src={profileData.profileImage}
-              alt="Profile"
-              className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-            />
+            <div>
+              <img
+                src={profileData.profileImage || editedProfile?.profileImage}
+                alt="Profile"
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg flex justify-center items-center object-cover"
+              />
+              <input
+                type="file"
+                onChange={(event) => {
+                  const files = event.target.files;
+                  if (files && files.length) {
+                    setEditedProfile((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            profileImage: URL.createObjectURL(files[0]),
+                          }
+                        : null
+                    );
+                  }
+                }}
+              />
+            </div>
 
             <div className="flex-1">
               <div className="flex justify-between items-start">
@@ -253,7 +295,7 @@ const Profile: React.FC = () => {
                           prev ? { ...prev, name: newValue } : null
                         );
                       }}
-                      className="text-3xl font-bold border-white mr-2 border rounded px-2"
+                      className="text-3xl font-bold border-white mr-2 border rounded pxf-2"
                     />
                   ) : (
                     <h1 className="text-3xl font-bold text-gray-900">
@@ -278,17 +320,17 @@ const Profile: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <MapPin size={16} />
                       {isEditing ? (
-                        <input
-                          type="text"
-                          value={editedProfile?.location || ""}
+                        <Dropdown
+                          className="p-2 w-full"
+                          editable
+                          options={countries}
+                          value={editedProfile?.location}
+                          placeholder="Select your location"
                           onChange={(e) =>
                             setEditedProfile((prev) =>
-                              prev
-                                ? { ...prev, location: e.target.value }
-                                : null
+                              prev ? { ...prev, location: e.value } : null
                             )
                           }
-                          className="px-2 vzc"
                         />
                       ) : (
                         <span>{profileData.location}</span>
@@ -370,7 +412,7 @@ const Profile: React.FC = () => {
                         prev ? { ...prev, email: e.target.value } : null
                       )
                     }
-                    className="border rounded px-2"
+                    className="border rounded p-2"
                   />
                 ) : (
                   <span className="text-gray-700">{profileData.email}</span>
@@ -391,7 +433,7 @@ const Profile: React.FC = () => {
                           prev ? { ...prev, github: e.target.value } : null
                         )
                       }
-                      className="border rounded px-2"
+                      className="border rounded p-2"
                     />
                   ) : (
                     <a
@@ -409,22 +451,22 @@ const Profile: React.FC = () => {
                   {isEditing ? (
                     <input
                       type="text"
-                      value={editedProfile?.linkedin || ""}
+                      value={editedProfile?.linkedIn || ""}
                       onChange={(e) =>
                         setEditedProfile((prev) =>
-                          prev ? { ...prev, linkedin: e.target.value } : null
+                          prev ? { ...prev, linkedIn: e.target.value } : null
                         )
                       }
-                      className="border rounded px-2"
+                      className="border rounded p-2"
                     />
                   ) : (
                     <a
-                      href={`https://${profileData.linkedin}`}
+                      href={`https://${profileData.linkedIn}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
                     >
-                      {profileData.linkedin}
+                      {profileData.linkedIn}
                     </a>
                   )}
                 </div>
