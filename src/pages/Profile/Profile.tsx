@@ -16,27 +16,7 @@ import supabase from "@utils/supabase";
 import { useApp } from "@contexts/AppContext";
 import { getCountries } from "@utils/api";
 import { Dropdown } from "primereact/dropdown";
-
-interface ProfileData {
-  id: string;
-  name: string;
-  role: string;
-  location: string;
-  email: string;
-  github: string;
-  linkedIn: string;
-  bio: string;
-  profileImage: string;
-  following: number;
-  followers: number;
-  isFollowing: boolean;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  imageUrl?: string;
-}
+import { Post, ProfileData } from "@utils/definitions";
 
 const Profile: React.FC = () => {
   const { user } = useApp();
@@ -133,6 +113,7 @@ const Profile: React.FC = () => {
           github: editedProfile.github,
           linkedIn: editedProfile.linkedIn,
           email: editedProfile.email,
+          profileImage: editedProfile.profileImage,
         })
         .eq("id", user?.id);
       setIsLoading(false);
@@ -252,28 +233,32 @@ const Profile: React.FC = () => {
       <div className="px-44 absolute top-32 w-full ">
         <div className="bg-transparent rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-start gap-6">
-            <div>
+            <div className="flex flex-col items-center">
               <img
                 src={profileData.profileImage || editedProfile?.profileImage}
                 alt="Profile"
                 className="w-32 h-32 rounded-full border-4 border-white shadow-lg flex justify-center items-center object-cover"
               />
-              <input
-                type="file"
-                onChange={(event) => {
-                  const files = event.target.files;
-                  if (files && files.length) {
-                    setEditedProfile((prev) =>
-                      prev
-                        ? {
-                            ...prev,
-                            profileImage: URL.createObjectURL(files[0]),
-                          }
-                        : null
-                    );
-                  }
-                }}
-              />
+              {isEditing && (
+                <input
+                  type="file"
+                  placeholder="Select Image"
+                  className="w-28 mt-3 border rounded p-2"
+                  onChange={(event) => {
+                    const files = event.target.files;
+                    if (files && files.length) {
+                      setEditedProfile((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              profileImage: URL.createObjectURL(files[0]),
+                            }
+                          : null
+                      );
+                    }
+                  }}
+                />
+              )}
             </div>
 
             <div className="flex-1">

@@ -14,8 +14,8 @@ import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import supabase from "@utils/supabase";
 import { Session } from "@supabase/supabase-js";
+import User from "@pages/User/User";
 
-console.log("asdfa")
 const ProtectedRoute: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   useEffect(() => {
@@ -44,6 +44,7 @@ export const applicationRoutes: RouteObject[] = [
       { path: "/profile", element: <Profile /> },
       { path: "/feed", element: <Feed /> },
       { path: "/auth", element: <Auth /> },
+      { path: "/user", element: <User /> },
     ],
   },
 ];
