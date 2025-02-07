@@ -15,6 +15,7 @@ const PostCard: React.FC<PostCardProps> = ({
     content,
     imageUrl,
 }) => { 
+
     return (
         <div className="bg-white rounded-lg shadow-md p-4 mb-4">
             {/* Post Header */}

@@ -31,6 +31,9 @@ export interface Post {
   id: string;
   content: string;
   imageUrl?: string;
+  userImage: string;
+  userName: string;
+  author: string;
 }
 
 export interface EditComponentProps {
@@ -39,8 +42,5 @@ export interface EditComponentProps {
   field: string;
   styles: string;
   inputStyle: string;
-  onUpdate: (
-    newValue: string,
-    field: string
-  ) => void;
+  onUpdate: (newValue: string, field: string) => void;
 }
