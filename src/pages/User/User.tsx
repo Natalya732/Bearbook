@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useApp } from "@contexts/AppContext";
 import { Post, ProfileData } from "@utils/definitions";
 import supabase, { generateImageUrl } from "@utils/supabase";
-import { GitHub, Linkedin, Loader, LogOut, Mail, MapPin } from "react-feather";
+import {
+  GitHub,
+  Linkedin,
+  Loader,
+  LogOut,
+  Mail,
+  MapPin,
+  X,
+} from "react-feather";
 import toast from "react-hot-toast";
 import EditComponent from "./EditUser";
 import PostCard from "@pages/PostCard/PostCard";
@@ -21,10 +29,11 @@ const LoaderProfile = () => {
 export default function User() {
   const { user } = useApp();
   const imgRef = useRef<HTMLInputElement>(null);
+  const postImgRef = useRef<HTMLInputElement>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [createDialog, setCreateDialog] = useState<boolean>(true);
+  const [createDialog, setCreateDialog] = useState<boolean>(false);
 
   type PostError = {
     content: string;
@@ -39,6 +48,7 @@ export default function User() {
     email: "",
     github: "",
     linkedIn: "",
+    userFile: null,
     bio: "",
     profileImage: "",
     followers: 0,
@@ -50,12 +60,15 @@ export default function User() {
     id: "",
     content: "",
     imageUrl: "",
-    userName: "",
-    userImage: "",
-    author: "",
+    imageFile: null,
+    created_at: "",
+    authorName: "",
+    authorImage: "",
   };
-  const [editedProfileData, setEditedProfileData] =
-    useState<ProfileData>(profileObject);
+
+  const [editedProfileData, setEditedProfileData] = useState<
+    ProfileData & { userFile: null | File }
+  >(profileObject);
 
   const [profileData, setProfileData] = useState<ProfileData>(profileObject);
 
@@ -63,8 +76,9 @@ export default function User() {
     content: "",
     imageUrl: "",
   });
-
-  const [newPost, setNewPost] = useState<Post>(postObject);
+  const [newPost, setNewPost] = useState<Post & { imageFile: null | File }>(
+    postObject
+  );
 
   const [posts, setPosts] = useState<Post[]>([]);
 
@@ -99,14 +113,40 @@ export default function User() {
     }
   }
 
+  async function handleFileUpload(file: File | null, bucket: string) {
+    if (!file || !(file instanceof File)) return false;
+
+    try {
+      setIsLoading(true);
+      const res = await uploadImage(file, bucket);
+      setIsLoading(false);
+      if (res.error) throw new Error(res.error);
+      const postImageUrl = generateImageUrl(bucket, res.data.path);
+      return postImageUrl;
+    } catch (err) {
+      toast.error("Error uploading post image");
+    }
+  }
+
   const handleEditProfile = async () => {
     if (!editedProfileData) return;
     try {
+      const userImageUrl = editedProfileData.userFile
+        ? await handleFileUpload(editedProfileData.userFile, "PostImages")
+        : profileData.profileImage;
+
+      if (!userImageUrl) return;
+
+      const { userFile, ...updatedEditedProfile } = editedProfileData;
+      updatedEditedProfile.profileImage = userImageUrl;
+
+      toast.success("Successfully Image Uploaded!");
+
       setIsLoading(true);
       const { error } = await supabase
         .from("User")
         .update({
-          ...editedProfileData,
+          ...updatedEditedProfile,
         })
         .eq("id", user?.id);
 
@@ -134,38 +174,30 @@ export default function User() {
 
   async function getAllPosts(userId: string) {
     try {
-      console.log("user", userId);
       setIsLoading(true);
-      const { data: Posts, error } = await supabase
-        .from("Posts")
-        .select("*")
-        .eq("author", userId);
+      const { data: posts, error } = await supabase
+        .from("User")
+        .select(`name, profileImage, Posts (content, imageUrl, created_at,id)`)
+        .order("created_at", { ascending: false })
+        .eq("id", userId);
+
       setIsLoading(false);
       if (error) throw new Error(error.message);
-      if (Posts) {
-        setPosts(Posts);
-      }
+
+      const postsArray: Post[] = posts
+        .map((item) => {
+          return item.Posts.map((post) => ({
+            authorName: item.name,
+            authorImage: item.profileImage,
+            ...post,
+          }));
+        })
+        .flat();
+      setPosts(postsArray);
       return null;
     } catch (err) {
       console.log("Error in getting all posts", err);
       toast.error("Error fetching all the posts");
-    }
-  }
-
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files;
-    if (!file || file.length === 0) return;
-
-    try {
-      const res = await uploadImage(file[0], "UserImage");
-      if (res.error) {
-        throw new Error(res.error);
-      }
-      const imageUrl = generateImageUrl("UserImage", res.data.path);
-      setProfileData((prev) => ({ ...prev, profileImage: imageUrl }));
-      setEditedProfileData((prev) => ({ ...prev, profileImage: imageUrl }));
-    } catch (err) {
-      toast.error("Error Uploading file");
     }
   }
 
@@ -179,12 +211,12 @@ export default function User() {
       newError.content = "Please write some content for the post";
     }
 
-    if (newPost.imageUrl && !newPost.imageUrl?.endsWith(".jpg")) {
+    if (newPost.imageFile && !newPost.imageFile?.name.endsWith(".jpg")) {
       newError.imageUrl = "Only jpg images are allowed";
     }
     setPostErr(newError);
-    if (Object.values(newError).length === 0) return true;
-
+    const error = Object.values(newError).some((item) => item !== "");
+    if (!error) return true;
     return false;
   }
 
@@ -198,12 +230,20 @@ export default function User() {
         return;
       }
 
+      const postImageUrl = await handleFileUpload(
+        newPost.imageFile,
+        "PostImages"
+      );
+
+      if (!postImageUrl) return;
+
+      toast.success("Successfully Image Uploaded!");
+
       const updatedPost = {
-        ...newPost,
+        content: newPost.content,
+        imageUrl: postImageUrl,
         id: generateUUID(),
         author: profileData.id,
-        userImage: profileData.profileImage,
-        userName: profileData.name,
       };
 
       const { data, error, status } = await supabase
@@ -212,7 +252,7 @@ export default function User() {
 
       setIsLoading(false);
       if (error) throw new Error(error.message);
-      if (status === 201) toast.success("Successfully created Post");
+      if (status === 201) toast.success("Successfully Post created");
       user && getAllPosts(user.id);
       setCreateDialog(false);
     } catch (err) {
@@ -278,19 +318,37 @@ export default function User() {
             Image URL (optional)
           </label>
           <div className="flex gap-2">
-            <Button className="bg-blue-400 text-white rounded-lg px-4 py-2 hover:bg-blue-600">
+            <Button
+              className="bg-blue-400 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
+              onClick={() => postImgRef.current && postImgRef.current?.click()}
+            >
               Select
             </Button>
-            <input
-              type="text"
-              id="imageUrl"
-              className={`p-2 bg-zinc-100 rounded-md flex-1 ${
+            <div
+              className={`p-2 flex justify-between bg-zinc-100 rounded-md flex-1 ${
                 postErr.imageUrl ? "border-red-600" : ""
               }`}
+            >
+              {newPost.imageFile?.name || "Choose a File"}
+
+              <X
+                className="cursor-pointer"
+                onClick={() =>
+                  setNewPost((prev) => ({ ...prev, imageFile: null }))
+                }
+              />
+            </div>
+            <input
+              type="file"
+              id="imageUrl"
+              ref={postImgRef}
+              style={{ display: "none" }}
               placeholder="Enter image URL"
-              value={newPost.imageUrl}
               onChange={(e) => {
-                setNewPost((prev) => ({ ...prev, imageUrl: e.target.value }));
+                const file = e.target.files || null;
+                if (file && file.length) {
+                  setNewPost((prev) => ({ ...prev, imageFile: file[0] }));
+                }
               }}
             />
           </div>
@@ -319,7 +377,7 @@ export default function User() {
           </span>
           <LogOut onClick={handleSignOut} />
         </div>
-        <div className="px-36 w-full">
+        <div className="px-80 w-full">
           <div className="profile px-12 p-4 h-fit mt-32 rounded shadow-lg">
             <div className="flex gap-6">
               <div
@@ -334,28 +392,22 @@ export default function User() {
                   }
                   className="h-32 w-32 border-white border-4 rounded-full"
                 ></img>
-                <input
-                  type="file"
-                  ref={imgRef}
-                  style={{ display: "none" }}
-                  onChange={(e) => handleFileUpload(e)}
-                  // onChange={(e) => {
-                  //   if (!isEditing) return;
-                  //   const newFile = e.target.files;
-                  //   if (newFile && newFile.length) {
-                  //     const res = uploadImage(newFile[0], "UserImage");
-                  //     console.log("res", res);
-                  //   }
-                  //   setSelectedProfileImg(newFile[0]);
-
-                  //   if (newFile && newFile.length) {
-                  //     setEditedProfileData((prev) => ({
-                  //       ...prev,
-                  //       profileImage: URL.createObjectURL(newFile[0]),
-                  //     }));
-                  //   }
-                  // }}
-                />
+                {isEditing && (
+                  <input
+                    type="file"
+                    ref={imgRef}
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files || null;
+                      if (file && file.length) {
+                        setEditedProfileData((prev) => ({
+                          ...prev,
+                          userFile: file[0],
+                        }));
+                      }
+                    }}
+                  />
+                )}
               </div>
               <div className="flex flex-col w-full">
                 <div className="flex justify-between text-white">
@@ -477,8 +529,8 @@ export default function User() {
                 <PostCard
                   key={post.id}
                   id={post.id}
-                  userImage={post.userImage}
-                  username={post.userName}
+                  userImage={post.authorImage || ""}
+                  username={post.authorName}
                   content={post.content}
                   imageUrl={post.imageUrl}
                 />

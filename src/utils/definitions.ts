@@ -31,9 +31,9 @@ export interface Post {
   id: string;
   content: string;
   imageUrl?: string;
-  userImage: string;
-  userName: string;
-  author: string;
+  created_at: string;
+  authorName: string;
+  authorImage?: string;
 }
 
 export interface EditComponentProps {

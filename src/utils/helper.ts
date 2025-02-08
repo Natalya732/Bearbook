@@ -9,7 +9,6 @@ export function generateUUID() {
 }
 
 export async function uploadImage(file: File, bucket: string) {
-    console.log("new fune")
   let response = {
     data: null as any,
     error: "",
