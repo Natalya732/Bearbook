@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import PostCard from "./PostCard/PostCard";
 import { Loader } from "react-feather";
-import { Button } from "primereact/button";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@components/ui/button";
 // import { fetchGraphQL } from "@apis/user";
 
 interface Post {

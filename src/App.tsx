@@ -1,3 +1,4 @@
+
 import {
   createBrowserRouter,
   Outlet,
@@ -8,7 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile/Profile";
 import Feed from "./pages/Feed/Feed";
 import Auth from "./pages/Auth/Auth";
-import "primereact/resources/themes/lara-light-cyan/theme.css";
+
 import { AppProvider } from "@contexts/AppContext";
 import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";

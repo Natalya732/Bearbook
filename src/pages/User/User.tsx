@@ -14,9 +14,23 @@ import {
 import toast from "react-hot-toast";
 import EditComponent from "./EditUser";
 import PostCard from "@pages/PostCard/PostCard";
-import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
+// import { Dialog } from "primereact/dialog";
+// import { Button } from "primereact/button";
 import { generateUUID, uploadImage } from "@utils/helper";
+import { Button } from "@components/ui/button";
+import {
+  Dialog,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTrigger,
+} from "@components/ui/dialog";
+import {
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+} from "@radix-ui/react-dialog";
 
 const LoaderProfile = () => {
   return (
@@ -33,7 +47,7 @@ export default function User() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [createDialog, setCreateDialog] = useState<boolean>(false);
+  const [createDialog, setCreateDialog] = useState<boolean>(true);
 
   type PostError = {
     content: string;
@@ -270,91 +284,82 @@ export default function User() {
   }, []);
 
   const createPostDialog = (
-    <Dialog
-      header="Create Post"
-      visible={createDialog}
-      className="p-4 rounded bg-white"
-      style={{ width: "500px" }}
-      footer={
-        <div className="flex justify-end gap-4 mt-5">
-          <Button
-            className="p-button-text"
-            label="Cancel"
-            icon="pi pi-times"
-            onClick={() => setCreateDialog(false)}
-          />
-          <Button
-            label="Create Post"
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            icon="pi pi-check"
-            autoFocus
-            onClick={() => createNewPost()}
-          />
-        </div>
-      }
-      onHide={() => setCreateDialog(false)}
-    >
-      <div className="flex flex-col gap-4 mt-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="content" className="font-medium">
-            Content
-          </label>
-          <textarea
-            id="content"
-            className={`p-2 border rounded-md ${
-              postErr.content ? "border-red-600" : ""
-            }`}
-            rows={4}
-            placeholder="What's on your mind?"
-            value={newPost.content}
-            onChange={(e) => {
-              setNewPost((prev) => ({ ...prev, content: e.target.value }));
-            }}
-          />
-          <span style={{ color: "red" }}>{postErr.content}</span>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="imageUrl" className="font-medium">
-            Image URL (optional)
-          </label>
-          <div className="flex gap-2">
-            <Button
-              className="bg-blue-400 text-white rounded-lg px-4 py-2 hover:bg-blue-600"
-              onClick={() => postImgRef.current && postImgRef.current?.click()}
-            >
-              Select
-            </Button>
+    <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+      <DialogPortal>
+        <DialogOverlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+        <DialogContent className="fixed left-1/2 top-1/2 w-full max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-xl border">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-gray-800">
+              Create Post
+            </DialogTitle>
+            <DialogDescription className="text-gray-500">
+              What’s on your mind today?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-3">
+            <textarea
+              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={4}
+              value={newPost.content}
+              onChange={(e) => {
+                setNewPost((prev) => ({ ...prev, content: e.target.value }));
+              }}
+              placeholder="Write something..."
+            />
+            <span style={{ color: "red" }}>{postErr.content}</span>
+          </div>
+
+          <div className="space-y-4 mt-3 flex flex-col gap-2">
             <div
-              className={`p-2 flex justify-between bg-zinc-100 rounded-md flex-1 ${
+              className={`p-2 flex cursor-pointer justify-between bg-zinc-50 rounded-md flex-1 ${
                 postErr.imageUrl ? "border-red-600" : ""
               }`}
+              onClick={() => postImgRef.current && postImgRef.current.click()}
             >
-              {newPost.imageFile?.name || "Choose a File"}
-
+              {newPost.imageFile?.name || "Choose a jpg image"}
               <X
                 className="cursor-pointer"
-                onClick={() =>
-                  setNewPost((prev) => ({ ...prev, imageFile: null }))
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNewPost((prev) => ({ ...prev, imageFile: null }));
+                }}
               />
             </div>
             <input
               type="file"
               id="imageUrl"
               ref={postImgRef}
-              style={{ display: "none" }}
-              placeholder="Enter image URL"
+              style={{ display: "none", width: "0px" }}
+              placeholder="Enter Image Url"
               onChange={(e) => {
-                const file = e.target.files || null;
+                const file = e.target.files;
                 if (file && file.length) {
                   setNewPost((prev) => ({ ...prev, imageFile: file[0] }));
                 }
               }}
             />
+            <span style={{ color: "red" }}>{postErr.imageUrl}</span>
           </div>
-          <span style={{ color: "red" }}>{postErr.imageUrl}</span>
-        </div>
-      </div>
+          <DialogFooter className="flex justify-end mt-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setCreateDialog(false);
+                setNewPost(postObject);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => createNewPost()}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </DialogPortal>
     </Dialog>
   );
 
@@ -517,12 +522,12 @@ export default function User() {
           <div className="mt-8 pb-8">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
-              <button
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              <Button
+                className=" text-white px-4 py-2 rounded-lg hover:bg-blue-600"
                 onClick={() => setCreateDialog(true)}
               >
                 Create Post
-              </button>
+              </Button>
             </div>
             <div className="space-y-6">
               {posts.map((post) => (

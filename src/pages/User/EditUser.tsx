@@ -1,6 +1,6 @@
 import { getCountries } from "@utils/api";
 import { EditComponentProps } from "@utils/definitions";
-import { Dropdown } from "primereact/dropdown";
+// import { Dropdown } from "primereact/dropdown";
 import React, { useEffect, useState } from "react";
 
 const EditComponent = React.memo(
@@ -43,14 +43,15 @@ const EditComponent = React.memo(
 
     if (field === "location") {
       return (
-        <Dropdown
-          className="text-black w-full h-fit p-3"
-          value={value}
-          options={countries}
-          placeholder="Select your location"
-          editable
-          onChange={(e) => handleChange(e.value)}
-        />
+        <div></div>
+        // <Dropdown
+        //   className="text-black w-full h-fit p-3"
+        //   value={value}
+        //   options={countries}
+        //   placeholder="Select your location"
+        //   editable
+        //   onChange={(e) => handleChange(e.value)}
+        // />
       );
     }
 

@@ -1,10 +1,10 @@
 import { createRoot } from "react-dom/client";
-import { PrimeReactProvider } from "primereact/api";
 import App from "./App.tsx";
 import "./index.css";
+import React from "react";
 
 createRoot(document.getElementById("root")!).render(
-    <PrimeReactProvider>
-      <App />
-    </PrimeReactProvider>
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
 );

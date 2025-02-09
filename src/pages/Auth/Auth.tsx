@@ -1,3 +1,4 @@
+import { Button } from "@components/ui/button";
 import { useApp } from "@contexts/AppContext";
 import supabase from "@utils/supabase";
 import React, { useState } from "react";
@@ -142,12 +143,12 @@ const Auth: React.FC = () => {
               required
             />
           </div>
-          <button
+          <Button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+            className="w-full text-white py-2 px-4 rounded-md hover:bg-blue-600"
           >
             {isSignedUp ? "Login" : "Sign Up"}
-          </button>
+          </Button>
         </form>
         <div className="mt-4 text-center">
           <div
