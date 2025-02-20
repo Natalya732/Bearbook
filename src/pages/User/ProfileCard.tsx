@@ -41,7 +41,7 @@ export default function ProfileCard({
         </div>
         <div className="personalData w-full flex-col gap-5">
           <div className="flex w-full justify-between">
-            <div className="title_role mt-4">
+            <div className="title_role mt-4 text-white">
               <EditComponent
                 isEdit={isEditing}
                 value={editedProfileData.name}
@@ -60,7 +60,7 @@ export default function ProfileCard({
                 onUpdate={onValueChange}
               />
             </div>
-            <div className="location_otherDetai flex gap-5">
+            <div className="location_otherDetai text-white flex gap-5">
               <span className="flex gap-2">
                 <MapPin />
                 <EditComponent

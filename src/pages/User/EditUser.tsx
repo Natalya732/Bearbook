@@ -29,7 +29,6 @@ const EditComponent = React.memo(
       fetchCountries();
     }, []);
 
-    console.log("is", isEdit);
     if (!isEdit) return <div className={styles}>{value}</div>;
 
     if (field === "bio") {

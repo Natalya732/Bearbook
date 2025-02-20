@@ -8,7 +8,7 @@ import PostCard from "@pages/PostCard/PostCard";
 import { generateUUID, uploadImage } from "@utils/helper";
 import { Button } from "@components/ui/button";
 import ProfileCard from "./ProfileCard";
-import CreatePostDialog from "./CreatePostDialog";
+import CreatePostDialog from "../PostCard/CreatePostDialog";
 
 const LoaderProfile = () => {
   return (
