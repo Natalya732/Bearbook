@@ -16,6 +16,7 @@ const EditComponent = React.memo(
     const [countries, setCountries] = useState<String[]>([]);
 
     const handleChange = (newValue: string) => {
+      console.log("fasdfas", field, newValue);
       onUpdate(field, newValue);
     };
 
@@ -29,6 +30,7 @@ const EditComponent = React.memo(
       fetchCountries();
     }, []);
 
+    console.log("is", isEdit);
     if (!isEdit) return <div className={styles}>{value}</div>;
 
     if (field === "bio") {
@@ -43,9 +45,7 @@ const EditComponent = React.memo(
     }
 
     if (field === "location") {
-      return (
-       <CountrySelect/>
-      );
+      return <CountrySelect />;
     }
 
     return (

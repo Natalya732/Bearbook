@@ -2,20 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useApp } from "@contexts/AppContext";
 import { Post, ProfileData } from "@utils/definitions";
 import supabase, { generateImageUrl } from "@utils/supabase";
-import {
-  GitHub,
-  Linkedin,
-  Loader,
-  LogOut,
-  Mail,
-  MapPin,
-  X,
-} from "react-feather";
+import { Loader, LogOut, X } from "react-feather";
 import toast from "react-hot-toast";
-import EditComponent from "./EditUser";
 import PostCard from "@pages/PostCard/PostCard";
-// import { Dialog } from "primereact/dialog";
-// import { Button } from "primereact/button";
 import { generateUUID, uploadImage } from "@utils/helper";
 import { Button } from "@components/ui/button";
 import {
@@ -31,6 +20,7 @@ import {
   DialogTitle,
 } from "@radix-ui/react-dialog";
 import ProfileCard from "./ProfileCard";
+import CreatePostDialog from "./CreatePostDialog";
 
 const LoaderProfile = () => {
   return (
@@ -42,7 +32,6 @@ const LoaderProfile = () => {
 
 export default function User() {
   const { user } = useApp();
-  const imgRef = useRef<HTMLInputElement>(null);
   const postImgRef = useRef<HTMLInputElement>(null);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -84,8 +73,6 @@ export default function User() {
     ProfileData & { userFile: null | File }
   >(profileObject);
 
-  const [profileData, setProfileData] = useState<ProfileData>(profileObject);
-
   const [postErr, setPostErr] = useState<PostError>({
     content: "",
     imageUrl: "",
@@ -111,10 +98,6 @@ export default function User() {
         return null;
       }
       if (data) {
-        setProfileData((prev) => ({
-          ...prev,
-          ...data,
-        }));
         setEditedProfileData({ ...data });
       }
       return data;
@@ -145,9 +128,9 @@ export default function User() {
   const handleEditProfile = async () => {
     if (!editedProfileData) return;
     try {
-      const userImageUrl = editedProfileData.userFile
-        ? await handleFileUpload(editedProfileData.userFile, "PostImages")
-        : profileData.profileImage;
+      const userImageUrl =
+        editedProfileData.userFile &&
+        (await handleFileUpload(editedProfileData.userFile, "PostImages"));
 
       if (!userImageUrl) return;
 
@@ -171,7 +154,6 @@ export default function User() {
         return;
       }
 
-      setProfileData(editedProfileData);
       setIsEditing(false);
       toast.success("Profile updated successfully !");
     } catch (err) {
@@ -257,10 +239,10 @@ export default function User() {
         content: newPost.content,
         imageUrl: postImageUrl,
         id: generateUUID(),
-        author: profileData.id,
+        author: editedProfileData.id,
       };
 
-      const { data, error, status } = await supabase
+      const { error, status } = await supabase
         .from("Posts")
         .insert([updatedPost]);
 
@@ -274,8 +256,12 @@ export default function User() {
     }
   }
 
-  function onValueChange(f: string, val: string) {
+  function onValueChange(f: string, val: string | File): void {
     setEditedProfileData((prev) => ({ ...prev, [f]: val }));
+  }
+
+  function handleDialogChange(f: string, val: string): void {
+    setNewPost((prev) => ({ ...prev, [f]: val }));
   }
 
   useEffect(() => {
@@ -283,85 +269,85 @@ export default function User() {
     getAllPosts(user ? user.id : "");
   }, []);
 
-  const createPostDialog = (
-    <Dialog open={createDialog} onOpenChange={setCreateDialog}>
-      <DialogPortal>
-        <DialogOverlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
-        <DialogContent className="fixed left-1/2 top-1/2 w-full max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-xl border">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold text-gray-800">
-              Create Post
-            </DialogTitle>
-            <DialogDescription className="text-gray-500">
-              What’s on your mind today?
-            </DialogDescription>
-          </DialogHeader>
+  // const createPostDialog = (
+  //   <Dialog open={createDialog} onOpenChange={setCreateDialog}>
+  //     <DialogPortal>
+  //       <DialogOverlay className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+  //       <DialogContent className="fixed left-1/2 top-1/2 w-full max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-xl border">
+  //         <DialogHeader>
+  //           <DialogTitle className="text-xl font-semibold text-gray-800">
+  //             Create Post
+  //           </DialogTitle>
+  //           <DialogDescription className="text-gray-500">
+  //             What’s on your mind today?
+  //           </DialogDescription>
+  //         </DialogHeader>
 
-          <div className="space-y-4 mt-3">
-            <textarea
-              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={4}
-              value={newPost.content}
-              onChange={(e) => {
-                setNewPost((prev) => ({ ...prev, content: e.target.value }));
-              }}
-              placeholder="Write something..."
-            />
-            <span style={{ color: "red" }}>{postErr.content}</span>
-          </div>
+  //         <div className="space-y-4 mt-3">
+  //           <textarea
+  //             className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  //             rows={4}
+  //             value={newPost.content}
+  //             onChange={(e) => {
+  //               setNewPost((prev) => ({ ...prev, content: e.target.value }));
+  //             }}
+  //             placeholder="Write something..."
+  //           />
+  //           <span style={{ color: "red" }}>{postErr.content}</span>
+  //         </div>
 
-          <div className="space-y-4 mt-3 flex flex-col gap-2">
-            <div
-              className={`p-2 flex cursor-pointer justify-between bg-zinc-50 rounded-md flex-1 ${
-                postErr.imageUrl ? "border-red-600" : ""
-              }`}
-              onClick={() => postImgRef.current && postImgRef.current.click()}
-            >
-              {newPost.imageFile?.name || "Choose a jpg image"}
-              <X
-                className="cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setNewPost((prev) => ({ ...prev, imageFile: null }));
-                }}
-              />
-            </div>
-            <input
-              type="file"
-              id="imageUrl"
-              ref={postImgRef}
-              style={{ display: "none", width: "0px" }}
-              placeholder="Enter Image Url"
-              onChange={(e) => {
-                const file = e.target.files;
-                if (file && file.length) {
-                  setNewPost((prev) => ({ ...prev, imageFile: file[0] }));
-                }
-              }}
-            />
-            <span style={{ color: "red" }}>{postErr.imageUrl}</span>
-          </div>
-          <DialogFooter className="flex justify-end mt-4">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCreateDialog(false);
-                setNewPost(postObject);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => createNewPost()}
-              className="bg-blue-600 text-white hover:bg-blue-700"
-            >
-              Confirm
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </DialogPortal>
-    </Dialog>
-  );
+  //         <div className="space-y-4 mt-3 flex flex-col gap-2">
+  //           <div
+  //             className={`p-2 flex cursor-pointer justify-between bg-zinc-50 rounded-md flex-1 ${
+  //               postErr.imageUrl ? "border-red-600" : ""
+  //             }`}
+  //             onClick={() => postImgRef.current && postImgRef.current.click()}
+  //           >
+  //             {newPost.imageFile?.name || "Choose a jpg image"}
+  //             <X
+  //               className="cursor-pointer"
+  //               onClick={(e) => {
+  //                 e.stopPropagation();
+  //                 setNewPost((prev) => ({ ...prev, imageFile: null }));
+  //               }}
+  //             />
+  //           </div>
+  //           <input
+  //             type="file"
+  //             id="imageUrl"
+  //             ref={postImgRef}
+  //             style={{ display: "none", width: "0px" }}
+  //             placeholder="Enter Image Url"
+  //             onChange={(e) => {
+  //               const file = e.target.files;
+  //               if (file && file.length) {
+  //                 setNewPost((prev) => ({ ...prev, imageFile: file[0] }));
+  //               }
+  //             }}
+  //           />
+  //           <span style={{ color: "red" }}>{postErr.imageUrl}</span>
+  //         </div>
+  //         <DialogFooter className="flex justify-end mt-4">
+  //           <Button
+  //             variant="outline"
+  //             onClick={() => {
+  //               setCreateDialog(false);
+  //               setNewPost(postObject);
+  //             }}
+  //           >
+  //             Cancel
+  //           </Button>
+  //           <Button
+  //             onClick={() => createNewPost()}
+  //             className="bg-blue-600 text-white hover:bg-blue-700"
+  //           >
+  //             Confirm
+  //           </Button>
+  //         </DialogFooter>
+  //       </DialogContent>
+  //     </DialogPortal>
+  //   </Dialog>
+  // );
 
   return isLoading ? (
     <LoaderProfile />
@@ -383,9 +369,21 @@ export default function User() {
           <LogOut onClick={handleSignOut} />
         </div>
         <div className="w-full mb-24 px-32">
-          <ProfileCard />
+          <ProfileCard
+            editedProfileData={editedProfileData}
+            onValueChange={onValueChange}
+            isEditing={isEditing}
+          />
 
-          {createDialog && createPostDialog}
+          {createDialog && (
+            <CreatePostDialog
+              open={createDialog}
+              onOpenChange={setCreateDialog}
+              newPost={newPost}
+              createNewPost={createNewPost}
+              handleDialogChange = {handleDialogChange}
+            />
+          )}
 
           {/* Posts Section */}
           <div className="mt-8 pb-8">
