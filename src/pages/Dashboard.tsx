@@ -20,7 +20,6 @@ export default function Dashboard() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
-
   useEffect(() => {
     fetchMorePosts();
   }, []);
@@ -29,7 +28,7 @@ export default function Dashboard() {
   //   const res = await fetchGraphQL("550e8400-e29b-41d4-a716-446655440001");
   //   console.log("the new response",res);
   // }
-  
+
   // response();
   const fetchMorePosts = () => {
     setTimeout(() => {
@@ -77,7 +76,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Feed</h1>
           <Button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/user")}
             className="bg-blue-400 p-3 rounded text-white cursor-pointer"
           >
             Your Profile

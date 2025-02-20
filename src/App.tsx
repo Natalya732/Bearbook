@@ -5,7 +5,6 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile/Profile";
 import Feed from "./pages/Feed/Feed";
 import Auth from "./pages/Auth/Auth";
 
@@ -41,7 +40,6 @@ export const applicationRoutes: RouteObject[] = [
     element: <ProtectedRoute />,
     children: [
       { path: "/dashboard", element: <Dashboard /> },
-      { path: "/profile", element: <Profile /> },
       { path: "/feed", element: <Feed /> },
       { path: "/auth", element: <Auth /> },
       { path: "/user", element: <User /> },
