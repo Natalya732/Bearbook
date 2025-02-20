@@ -94,6 +94,7 @@ export default function CreatePostDialog({
                 }
               }}
             />
+            
             <span style={{ color: "red" }}>{postErr.imageUrl}</span>
           </div>
           <DialogFooter className="flex justify-end mt-4">
