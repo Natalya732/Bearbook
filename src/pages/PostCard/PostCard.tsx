@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Edit2, MoreHorizontal, Trash2 } from "react-feather";
+import DeleteDialog from "./DeleteDialog";
 
 interface PostCardProps {
   id: string;
@@ -11,12 +12,21 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({
   userImage,
+  id,
   username,
   content,
   imageUrl,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+
+  // ********************** Delete Post *******************
+
+
+  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -30,8 +40,16 @@ const PostCard: React.FC<PostCardProps> = ({
   }, []);
 
   const items = [
-    { label: "Edit", icon: <Edit2 size={18} />, action: () => console.log("Edit clicked") },
-    { label: "Delete", icon: <Trash2 size={18} />, action: () => console.log("Delete clicked") },
+    {
+      label: "Edit",
+      icon: <Edit2 size={18} />,
+      action: () => console.log("Edit clicked"),
+    },
+    {
+      label: "Delete",
+      icon: <Trash2 size={18} />,
+      action: () => setShowDeleteDialog(true),
+    },
   ];
 
   return (
@@ -47,6 +65,12 @@ const PostCard: React.FC<PostCardProps> = ({
             <h3 className="font-semibold text-gray-800">{username}</h3>
           </div>
         </div>
+        {showDeleteDialog && (
+          <DeleteDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+          />
+        )}
 
         <div className="relative" ref={menuRef}>
           <MoreHorizontal
