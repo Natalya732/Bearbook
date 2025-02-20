@@ -1,6 +1,5 @@
 import { getCountries } from "@utils/api";
 import { EditComponentProps } from "@utils/definitions";
-// import { Dropdown } from "primereact/dropdown";
 import React, { useEffect, useState } from "react";
 import { CountrySelect } from "./CountrySelect";
 

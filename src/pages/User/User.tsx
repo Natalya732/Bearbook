@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useApp } from "@contexts/AppContext";
 import { Post, ProfileData } from "@utils/definitions";
 import supabase, { generateImageUrl } from "@utils/supabase";
@@ -7,18 +7,6 @@ import toast from "react-hot-toast";
 import PostCard from "@pages/PostCard/PostCard";
 import { generateUUID, uploadImage } from "@utils/helper";
 import { Button } from "@components/ui/button";
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-} from "@components/ui/dialog";
-import {
-  DialogContent,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-} from "@radix-ui/react-dialog";
 import ProfileCard from "./ProfileCard";
 import CreatePostDialog from "./CreatePostDialog";
 
@@ -32,8 +20,6 @@ const LoaderProfile = () => {
 
 export default function User() {
   const { user } = useApp();
-  const postImgRef = useRef<HTMLInputElement>(null);
-
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createDialog, setCreateDialog] = useState<boolean>(false);
@@ -84,6 +70,7 @@ export default function User() {
   const [posts, setPosts] = useState<Post[]>([]);
 
   //   ******************************* Integration *****************************
+
   async function getUserProfile(userId: string) {
     try {
       setIsLoading(true);

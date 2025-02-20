@@ -4,8 +4,6 @@ import PostCard from "./PostCard/PostCard";
 import { Loader } from "react-feather";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@components/ui/button";
-// import { fetchGraphQL } from "@apis/user";
-
 interface Post {
   id: string;
   userImage: string;
@@ -24,12 +22,7 @@ export default function Dashboard() {
     fetchMorePosts();
   }, []);
 
-  // const response = async ()=> {
-  //   const res = await fetchGraphQL("550e8400-e29b-41d4-a716-446655440001");
-  //   console.log("the new response",res);
-  // }
 
-  // response();
   const fetchMorePosts = () => {
     setTimeout(() => {
       const newPosts = generateMockPosts(page);
