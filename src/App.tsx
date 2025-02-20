@@ -1,4 +1,3 @@
-
 import {
   createBrowserRouter,
   Outlet,
@@ -10,7 +9,7 @@ import Profile from "./pages/Profile/Profile";
 import Feed from "./pages/Feed/Feed";
 import Auth from "./pages/Auth/Auth";
 
-import { AppProvider } from "@contexts/AppContext";
+import { useApp } from "@contexts/AppContext";
 import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import supabase from "@utils/supabase";
@@ -51,12 +50,20 @@ export const applicationRoutes: RouteObject[] = [
 ];
 
 const myRoutes = createBrowserRouter(applicationRoutes);
-
 export default function App() {
+  const { user } = useApp();
+
+  console.log("session", User);
+  useEffect(() => {
+    if (window.location.pathname !== "/auth" && !user) {
+      window.location.replace("http://localhost:5173/auth");
+    }
+  }, []);
+
   return (
-    <AppProvider>
+    <>
       <Toaster position="top-right" reverseOrder={false} />
       <RouterProvider router={myRoutes} />
-    </AppProvider>
+    </>
   );
 }
