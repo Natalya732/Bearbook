@@ -14,7 +14,7 @@ import {
 import { Post } from "@utils/definitions";
 import { useRef } from "react";
 import { X } from "react-feather";
-console.log("aldkald;lk")
+
 interface createPostProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +25,7 @@ interface createPostProps {
     content: string;
     imageUrl: string;
   };
+  handleCancelDialog: () => void;
 }
 
 export default function CreatePostDialog({
@@ -34,8 +35,8 @@ export default function CreatePostDialog({
   createNewPost,
   handleDialogChange,
   postErr,
+  handleCancelDialog,
 }: createPostProps) {
-
   const postImgRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -98,14 +99,7 @@ export default function CreatePostDialog({
             <span style={{ color: "red" }}>{postErr.imageUrl}</span>
           </div>
           <DialogFooter className="flex justify-end mt-4">
-            <Button
-              variant="outline"
-              // onClick={() => {
-                
-              //   setCreateDialog(false);
-              //   setNewPost(postObject);
-              // }}
-            >
+            <Button variant="outline" onClick={() => handleCancelDialog()}>
               Cancel
             </Button>
             <Button
