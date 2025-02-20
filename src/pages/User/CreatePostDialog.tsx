@@ -14,7 +14,7 @@ import {
 import { Post } from "@utils/definitions";
 import { useRef } from "react";
 import { X } from "react-feather";
-
+console.log("aldkald;lk")
 interface createPostProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -94,7 +94,7 @@ export default function CreatePostDialog({
                 }
               }}
             />
-            
+
             <span style={{ color: "red" }}>{postErr.imageUrl}</span>
           </div>
           <DialogFooter className="flex justify-end mt-4">
