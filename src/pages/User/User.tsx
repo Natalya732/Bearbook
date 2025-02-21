@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useApp } from "@contexts/AppContext";
 import { Post, ProfileData } from "@utils/definitions";
 import supabase, { generateImageUrl } from "@utils/supabase";
-import { Loader, LogOut, X } from "react-feather";
+import { Loader, LogOut, } from "react-feather";
 import toast from "react-hot-toast";
 import PostCard from "@pages/PostCard/PostCard";
 import { generateUUID, uploadImage } from "@utils/helper";

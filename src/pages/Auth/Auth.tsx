@@ -91,7 +91,7 @@ const Auth: React.FC = () => {
     const res = selectedFn();
     setIsLoading(false);
     if (!res) return;
-    navigate("/dashboard");
+    navigate("/");
   }
 
   return isLoading ? (

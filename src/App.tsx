@@ -3,6 +3,7 @@ import {
   Outlet,
   RouteObject,
   RouterProvider,
+  useNavigate,
 } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Feed from "./pages/Feed/Feed";
@@ -16,6 +17,7 @@ import { Session } from "@supabase/supabase-js";
 import User from "@pages/User/User";
 
 const ProtectedRoute: React.FC = () => {
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -26,10 +28,14 @@ const ProtectedRoute: React.FC = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (!session) {
+        navigate("/auth");
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
   return session ? <Outlet /> : <Auth />;
 };
 
@@ -39,7 +45,7 @@ export const applicationRoutes: RouteObject[] = [
     path: "/",
     element: <ProtectedRoute />,
     children: [
-      { path: "/dashboard", element: <Dashboard /> },
+      { path: "/", element: <Dashboard /> },
       { path: "/feed", element: <Feed /> },
       { path: "/auth", element: <Auth /> },
       { path: "/user", element: <User /> },
@@ -48,15 +54,15 @@ export const applicationRoutes: RouteObject[] = [
 ];
 
 const myRoutes = createBrowserRouter(applicationRoutes);
+
 export default function App() {
   const { user } = useApp();
 
-  console.log("session", User);
-  useEffect(() => {
-    if (window.location.pathname !== "/auth" && !user) {
-      window.location.replace("http://localhost:5173/auth");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (window.location.pathname !== "/auth" && !user) {
+  //     window.location.replace("http://localhost:5173/auth");
+  //   }
+  // }, []);
 
   return (
     <>
