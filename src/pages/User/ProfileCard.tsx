@@ -17,10 +17,14 @@ export default function ProfileCard({
   const imgRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="profile text-zinc-800 h-fit mt-28 p-10 rounded shadow-lg">
+    <div
+      className={`profile text-zinc-800 h-fit p-6 rounded shadow-lg ${
+        isEditing ? "mt-16" : "mt-32"
+      }`}
+    >
       <div className="upper_segment flex items-center gap-6 w-full">
         <div
-          className="imageContainer border-white h-32 w-36 aspect-square flex justify-center items-center border-4 rounded-full overflow-hidden"
+          className="imageContainer"
           onClick={() => isEditing && imgRef.current && imgRef.current.click()}
         >
           <input
@@ -34,20 +38,17 @@ export default function ProfileCard({
               }
             }}
           />
-          <img
-            src={editedProfileData.profileImage}
-            className="h-32 w-32 rounded-full object-cover flex-shrink-0"
-          />
+          <img src={editedProfileData.profileImage} />
         </div>
         <div className="personalData w-full flex-col gap-5">
           <div className="flex w-full justify-between">
-            <div className="title_role mt-4 text-white">
+            <div>
               <EditComponent
                 isEdit={isEditing}
                 value={editedProfileData.name}
                 field="name"
-                styles="main-title tracking-wider text-3xl font-bold"
-                inputStyle="text-3xl font-bold border-white mr-2 border rounded pxf-2"
+                styles="title"
+                inputStyle=""
                 onUpdate={onValueChange}
               />
 
@@ -55,79 +56,84 @@ export default function ProfileCard({
                 isEdit={isEditing}
                 value={editedProfileData.role}
                 field="role"
-                styles="text-lg text-gray-100"
-                inputStyle="text-lg text-gray-600 border-white border rounded px-2 mt-2"
+                styles="role"
+                inputStyle=""
                 onUpdate={onValueChange}
               />
             </div>
-            <div className="location_otherDetai text-white flex gap-5">
-              <span className="flex gap-2">
-                <MapPin />
+            <div className="location_otherDetail flex gap-3 mt-auto text-sm">
+              <span className="flex gap-1">
+                <MapPin className="text-gray-100" />
                 <EditComponent
                   isEdit={isEditing}
                   value={editedProfileData.location}
                   field="location"
-                  styles=""
-                  inputStyle="p-2 w-full"
+                  styles="location"
+                  inputStyle=""
                   onUpdate={onValueChange}
                 />
               </span>
-              <span>{0} Followers</span>
-              <span>{0} Following</span>
+              {!isEditing && (
+                <>
+                  <span className="location">{0} Followers</span>
+                  <span className="location">{0} Following</span>
+                </>
+              )}
             </div>
           </div>
           <EditComponent
             isEdit={isEditing}
             value={editedProfileData.bio}
             field="bio"
-            styles="description text-zinc-400 mt-10"
-            inputStyle="w-full text-gray-700 border rounded p-2"
+            styles="bio text-zinc-500"
+            inputStyle=""
             onUpdate={onValueChange}
           />
         </div>
       </div>
       <div className="lower_segment text-zinc-700 w-full p-8">
         <hr />
-        <div className="flex justify-between  px-12 pt-6">
+        <div className="flex justify-between pt-6">
           <div className="flex flex-1 flex-col gap-3">
             <h2 className="text-lg font-bold">Contact Information</h2>
             <div className="flex gap-3">
-              <Mail />{" "}
+              <Mail />
               <span>
                 <EditComponent
                   isEdit={isEditing}
                   value={editedProfileData.email}
                   field="email"
-                  inputStyle=" text-gray-700 border rounded p-2"
-                  styles=""
+                  inputStyle="text-gray-700 border rounded p-2"
+                  styles="text-zinc-500"
                   onUpdate={onValueChange}
                 />
               </span>
             </div>
           </div>
-          <div className="flex flex-1 flex-col gap-5 flex-start">
-            <h2 className="text-lg font-bold">Social Links</h2>
-            <div className="flex gap-4 pl-4">
-              <GitHub />{" "}
+
+          <div className="flex flex-1 flex-col pl-14 gap-5 flex-start">
+            <h2 className="text-lg font-bold ">Social Links</h2>
+            <div className="flex gap-4">
+              <GitHub />
               <span>
                 <EditComponent
                   isEdit={isEditing}
                   value={editedProfileData.github}
                   field="github"
-                  styles=""
+                  styles="text-zinc-500"
                   inputStyle="text-gray-700 border rounded p-2"
                   onUpdate={onValueChange}
                 />
               </span>
             </div>
-            <div className="flex gap-4 pl-3">
+            <div className="flex gap-4">
               <Linkedin />{" "}
               <span>
                 <EditComponent
                   isEdit={isEditing}
                   value={editedProfileData.linkedIn}
                   field="linkedIn"
-                  styles=""
+                  styles="text-zinc-500"
                   inputStyle="text-gray-700 border rounded p-2"
                   onUpdate={onValueChange}
                 />

@@ -9,6 +9,8 @@ import { generateUUID, uploadImage } from "@utils/helper";
 import { Button } from "@components/ui/button";
 import ProfileCard from "./ProfileCard";
 import CreatePostDialog from "../PostCard/CreatePostDialog";
+import "@styles/User.scss";
+
 
 const LoaderProfile = () => {
   return (
@@ -20,7 +22,7 @@ const LoaderProfile = () => {
 
 export default function User() {
   const { user } = useApp();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createDialog, setCreateDialog] = useState<boolean>(false);
 
@@ -280,7 +282,7 @@ export default function User() {
           </span>
           <LogOut onClick={handleSignOut} />
         </div>
-        <div className="w-full mb-24 px-32">
+        <div className="w-full justify-center flex flex-col items-center">
           <ProfileCard
             editedProfileData={editedProfileData}
             onValueChange={onValueChange}
@@ -300,7 +302,7 @@ export default function User() {
           )}
 
           {/* Posts Section */}
-          <div className="mt-8 pb-8">
+          <div className="mt-8 pb-8 postContainer ">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
               <Button
