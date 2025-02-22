@@ -72,7 +72,10 @@ export default function User() {
     postObject
   );
 
-  const [posts, setPosts] = useState<Post[]>([]); //   ******************************* Integration *****************************
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  //   ******************************* Integration *****************************
+
   async function getUserProfile(userId: string) {
     try {
       setIsLoading(true);
@@ -81,7 +84,6 @@ export default function User() {
         .select("*")
         .eq("id", userId)
         .single();
-      setIsLoading(false);
       if (error) {
         toast.error(error.message);
         return null;
@@ -96,27 +98,30 @@ export default function User() {
           ? err.message
           : "Something went wrong fetching User Profile";
       toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   }
 
   async function handleFileUpload(file: File | null, bucket: string) {
     if (!file || !(file instanceof File)) return false;
-
     try {
       setIsLoading(true);
       const res = await uploadImage(file, bucket);
-      setIsLoading(false);
       if (res.error) throw new Error(res.error);
       const postImageUrl = generateImageUrl(bucket, res.data.path);
       return postImageUrl;
     } catch (err) {
       toast.error("Error uploading post image");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   const handleEditProfile = async () => {
     if (!editedProfileData) return;
     try {
+      setIsLoading(true);
       const userImageUrl =
         editedProfileData.userFile &&
         (await handleFileUpload(editedProfileData.userFile, "PostImages"));
@@ -128,7 +133,6 @@ export default function User() {
 
       toast.success("Successfully Image Uploaded!");
 
-      setIsLoading(true);
       const { error } = await supabase
         .from("User")
         .update({
@@ -136,17 +140,16 @@ export default function User() {
         })
         .eq("id", user?.id);
 
-      setIsLoading(false);
-
       if (error) {
         toast.error(error.message);
         return;
       }
-
       setIsEditing(false);
       toast.success("Profile updated successfully !");
     } catch (err) {
       toast.error("Failed to update profile!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -179,7 +182,6 @@ export default function User() {
         .order("created_at", { ascending: false })
         .eq("id", userId);
 
-      setIsLoading(false);
       if (error) throw new Error(error.message);
 
       const postsArray: Post[] = posts
@@ -196,6 +198,8 @@ export default function User() {
     } catch (err) {
       console.log("Error in getting all posts", err);
       toast.error("Error fetching all the posts");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -277,7 +281,6 @@ export default function User() {
       const validation = validatePost();
 
       if (!validation) {
-        setIsLoading(false);
         return;
       }
 
@@ -298,13 +301,14 @@ export default function User() {
         .from("Posts")
         .insert([updatedPost]);
 
-      setIsLoading(false);
       if (error) throw new Error(error.message);
       if (status === 201) toast.success("Successfully Post created");
       user && getAllPosts(user.id);
       handleCancelDialog();
     } catch (err) {
       console.log("error", err);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -313,7 +317,6 @@ export default function User() {
     try {
       setIsLoading(true);
       const { error } = await supabase.from("Posts").delete().eq("id", postId);
-      setIsLoading(false);
       if (error) {
         toast.error(error.message);
         return;
@@ -323,6 +326,7 @@ export default function User() {
     } catch (err) {
       toast.error("Failed to delete Post");
     } finally {
+      setIsLoading(false);
       setDeleteDialog(false);
     }
   }
