@@ -59,7 +59,6 @@ export default function User() {
     authorName: "",
     authorImage: "",
   };
-
   const [editedProfileData, setEditedProfileData] = useState<
     ProfileData & { userFile: null | File }
   >(profileObject);
@@ -76,6 +75,7 @@ export default function User() {
   const [posts, setPosts] = useState<Post[]>([]);
 
   //   ******************************* Integration *****************************
+  console.log("userfile", editedProfileData.userFile);
 
   async function getUserProfile(userId: string) {
     try {
@@ -335,9 +335,7 @@ export default function User() {
         />
       )}
 
-      <div
-        className={`postContainer mb-12 ${isEditing ? "mt-100" : "mt-80"}`}
-      >
+      <div className={`postContainer mb-12 ${isEditing ? "mt-100" : "mt-80"}`}>
         <div className="flex justify-between items-center">
           <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
           <Button

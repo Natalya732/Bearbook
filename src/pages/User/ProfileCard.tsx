@@ -1,10 +1,10 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditComponent from "./EditUser";
 import { GitHub, Linkedin, Mail, MapPin } from "react-feather";
 import { ProfileData } from "@utils/definitions";
 
 interface ProfileCardProps {
-  editedProfileData: ProfileData;
+  editedProfileData: ProfileData & { userFile: null | File };
   onValueChange: (f: string, val: string | File) => void;
   isEditing: boolean;
 }
@@ -15,6 +15,14 @@ export default function ProfileCard({
   isEditing,
 }: ProfileCardProps) {
   const imgRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState("");
+
+  useEffect(() => {
+    if (editedProfileData.userFile) {
+      const objectUrl = URL.createObjectURL(editedProfileData.userFile);
+      setImageUrl(objectUrl);
+    }
+  }, [editedProfileData.userFile]);
 
   return (
     <div
@@ -38,7 +46,7 @@ export default function ProfileCard({
               }
             }}
           />
-          <img src={editedProfileData.profileImage} />
+          <img src={imageUrl || editedProfileData.profileImage} />
         </div>
         <div className="personalData w-full flex-col gap-5">
           <div className="flex w-full justify-between">
