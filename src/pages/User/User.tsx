@@ -119,6 +119,7 @@ export default function User() {
   }
 
   const handleEditProfile = async () => {
+    console.log("edite", editedProfileData);
     if (!editedProfileData) return;
     try {
       setIsLoading(true);
@@ -126,6 +127,7 @@ export default function User() {
         editedProfileData.userFile &&
         (await handleFileUpload(editedProfileData.userFile, "PostImages"));
 
+      console.log("profile");
       if (!userImageUrl) return;
 
       const { userFile, ...updatedEditedProfile } = editedProfileData;
@@ -150,6 +152,7 @@ export default function User() {
       toast.error("Failed to update profile!");
     } finally {
       setIsLoading(false);
+      setIsEditing((prev) => !prev);
     }
   };
 
@@ -366,6 +369,7 @@ export default function User() {
             editedProfileData={editedProfileData}
             onValueChange={onValueChange}
             isEditing={isEditing}
+            handleEditProfile={handleEditProfile}
           />
         </div>
       </div>

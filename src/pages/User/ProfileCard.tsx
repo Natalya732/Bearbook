@@ -2,18 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import EditComponent from "./EditUser";
 import { GitHub, Linkedin, Mail, MapPin } from "react-feather";
 import { ProfileData } from "@utils/definitions";
+import { Button } from "@components/ui/button";
 
 interface ProfileCardProps {
   editedProfileData: ProfileData & { userFile: null | File };
   onValueChange: (f: string, val: string | File) => void;
   isEditing: boolean;
+  handleEditProfile: () => void;
 }
 
 export default function ProfileCard({
   editedProfileData,
   onValueChange,
   isEditing,
+  handleEditProfile,
 }: ProfileCardProps) {
+
   const imgRef = useRef<HTMLInputElement>(null);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -27,7 +31,9 @@ export default function ProfileCard({
   return (
     <div
       className={`profile text-zinc-800 h-fit p-6 rounded shadow-lg ${
-        isEditing ? "mt-14" : "mt-28"
+        isEditing
+          ? "mt-14 bg-gradient-to-r from-blue-100 to-purple-100"
+          : "mt-28"
       }`}
     >
       <div className="upper_segment flex items-center gap-6 w-full">
@@ -71,7 +77,9 @@ export default function ProfileCard({
             </div>
             <div className="location_otherDetail flex gap-3 mt-auto text-sm">
               <span className="flex gap-1">
-                <MapPin className="text-gray-100" />
+                <MapPin
+                  className={`${isEditing ? "text-zinc-800" : "text-zinc-100"}`}
+                />
                 <EditComponent
                   isEdit={isEditing}
                   value={editedProfileData.location}
@@ -150,6 +158,11 @@ export default function ProfileCard({
           </div>
         </div>
       </div>
+      {isEditing && (
+        <div className="flex float-right my-3">
+          <Button onClick={handleEditProfile}>Save Profile</Button>
+        </div>
+      )}
     </div>
   );
 }
