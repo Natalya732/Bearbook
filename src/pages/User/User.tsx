@@ -67,7 +67,7 @@ export default function User() {
     content: "",
     imageUrl: "",
   });
-
+  console.log("isEdit", isEditing);
   const [newPost, setNewPost] = useState<Post & { imageFile: null | File }>(
     postObject
   );
@@ -354,9 +354,10 @@ export default function User() {
           <span>Follow</span>
           <span
             onClick={() => {
-              setIsEditing((prev) => !prev);
               if (isEditing) {
                 handleEditProfile();
+              } else {
+                setIsEditing(true);
               }
             }}
           >
