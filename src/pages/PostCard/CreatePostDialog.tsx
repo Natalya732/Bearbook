@@ -27,19 +27,22 @@ interface createPostProps {
     imageUrl: string;
   };
   handleCancelDialog: () => void;
+  handleEditPost: () => void;
 }
 
 export default function CreatePostDialog({
   open,
   onOpenChange,
+  isEdit,
   newPost,
   createNewPost,
   handleDialogChange,
   postErr,
   handleCancelDialog,
+  handleEditPost,
 }: createPostProps) {
   const postImgRef = useRef<HTMLInputElement>(null);
-
+console.log("new", newPost)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
@@ -47,7 +50,7 @@ export default function CreatePostDialog({
         <DialogContent className="fixed left-1/2 top-1/2 w-full max-w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-xl border">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-800">
-              Create Post
+              {isEdit ? "Edit" : "Create"} Post
             </DialogTitle>
             <DialogDescription className="text-gray-500">
               What’s on your mind today?
@@ -69,17 +72,22 @@ export default function CreatePostDialog({
 
           <div className="space-y-4 mt-3 flex flex-col gap-2">
             <div
-              className={`p-2 flex cursor-pointer justify-between bg-zinc-50 rounded-md flex-1 ${
+              className={`p-2 flex w-full cursor-pointer justify-between bg-zinc-50 rounded-md ${
                 postErr.imageUrl ? "border-red-600" : ""
               }`}
               onClick={() => postImgRef.current && postImgRef.current.click()}
             >
-              {newPost.imageFile?.name || "Choose a jpg image"}
+              <span className="break-all whitespace-normal w-full overflow-hidden">
+                {newPost.imageFile?.name || newPost.imageUrl || "Choose a jpg"}
+              </span>
+
               <X
                 className="cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleDialogChange("imageFile", null);
+                  if (!newPost.imageFile && !newPost.imageUrl) return;
+                  if (newPost.imageFile) handleDialogChange("imageFile", null);
+                  if (newPost.imageUrl) handleDialogChange("imageUrl", "");
                 }}
               />
             </div>
@@ -104,7 +112,7 @@ export default function CreatePostDialog({
               Cancel
             </Button>
             <Button
-              onClick={() => createNewPost()}
+              onClick={() => (isEdit ? handleEditPost() : createNewPost())}
               className="bg-blue-600 text-white hover:bg-blue-700"
             >
               Confirm

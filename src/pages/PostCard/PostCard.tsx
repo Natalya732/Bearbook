@@ -38,7 +38,7 @@ const PostCard: React.FC<PostCardProps> = ({
     {
       label: "Edit",
       icon: <Edit2 size={18} />,
-      action: () => onEditToggle,
+      action: onEditToggle,
     },
     {
       label: "Delete",
@@ -60,16 +60,7 @@ const PostCard: React.FC<PostCardProps> = ({
             <h3 className="font-semibold text-gray-800">{username}</h3>
           </div>
         </div>
-
-        {/* {showDeleteDialog && (
-          <DeleteDialog
-            open={showDeleteDialog}
-            id={id}
-            handleCancel={onCancelDeletion}
-            handleDelete={onDeleteDialog}
-          />
-        )} */}
-
+        
         <div className="relative" ref={menuRef}>
           <MoreHorizontal
             size={22}

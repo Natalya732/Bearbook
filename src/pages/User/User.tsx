@@ -30,7 +30,7 @@ export default function User() {
   const { user } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [createDialog, setCreateDialog] = useState<boolean>(false);
+  const [createDialog, setCreateDialog] = useState<string>("");
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
   const [selectedPost, setSelectedPost] = useState<null | Post>(null);
 
@@ -72,11 +72,7 @@ export default function User() {
     postObject
   );
 
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  //   ******************************* Integration *****************************
-  console.log("userfile", editedProfileData.userFile);
-
+  const [posts, setPosts] = useState<Post[]>([]); //   ******************************* Integration *****************************
   async function getUserProfile(userId: string) {
     try {
       setIsLoading(true);
@@ -170,7 +166,7 @@ export default function User() {
   }
 
   function handleCancelDialog() {
-    setCreateDialog(false);
+    setCreateDialog("");
     setNewPost(postObject);
   }
 
@@ -222,6 +218,59 @@ export default function User() {
     return false;
   }
 
+  async function handleEditPost() {
+    if (!newPost) return;
+    try {
+      setIsLoading(true);
+      const validation = validatePost();
+
+      if (!validation) {
+        return;
+      }
+
+      let postImageUrl;
+
+      if (newPost.imageFile) {
+        postImageUrl = await handleFileUpload(newPost.imageFile, "PostImages");
+        postImageUrl && toast.success("Successfully Image Uploaded!");
+      }
+
+      const updatedPost = {
+        content: newPost.content,
+        imageUrl: newPost.imageUrl
+          ? newPost.imageUrl
+          : postImageUrl
+          ? postImageUrl
+          : "",
+        id: newPost.id,
+        author: editedProfileData.id,
+      };
+      const { error } = await supabase
+        .from("Posts")
+        .update({
+          ...updatedPost,
+        })
+        .eq("id", newPost.id);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (!error) {
+        toast.success("Successfully Post Updated");
+      }
+      setCreateDialog("");
+      setNewPost(postObject);
+      getAllPosts(user ? user.id : "");
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : "Something went wrong";
+      toast.error(errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function createNewPost() {
     try {
       setIsLoading(true);
@@ -232,18 +281,15 @@ export default function User() {
         return;
       }
 
-      const postImageUrl = await handleFileUpload(
-        newPost.imageFile,
-        "PostImages"
-      );
-
-      if (!postImageUrl) return;
-
-      toast.success("Successfully Image Uploaded!");
+      let postImageUrl;
+      if (newPost.imageFile) {
+        postImageUrl = await handleFileUpload(newPost.imageFile, "PostImages");
+        postImageUrl && toast.success("Successfully Image Uploaded!");
+      }
 
       const updatedPost = {
         content: newPost.content,
-        imageUrl: postImageUrl,
+        imageUrl: postImageUrl || "",
         id: generateUUID(),
         author: editedProfileData.id,
       };
@@ -286,6 +332,12 @@ export default function User() {
     getAllPosts(user ? user.id : "");
   }, []);
 
+  useEffect(() => {
+    if (createDialog === "edit" && selectedPost) {
+      setNewPost({ ...selectedPost, imageFile: null });
+    }
+  }, [createDialog, selectedPost]);
+
   return isLoading ? (
     <LoaderProfile />
   ) : (
@@ -316,12 +368,14 @@ export default function User() {
 
       {createDialog && (
         <CreatePostDialog
-          open={createDialog}
-          onOpenChange={setCreateDialog}
+          open={createDialog.trim() !== ""}
+          isEdit={createDialog === "edit"}
+          onOpenChange={() => setCreateDialog("")}
           newPost={newPost}
           createNewPost={createNewPost}
           handleDialogChange={handleDialogChange}
           postErr={postErr}
+          handleEditPost={handleEditPost}
           handleCancelDialog={handleCancelDialog}
         />
       )}
@@ -340,7 +394,7 @@ export default function User() {
           <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
           <Button
             className=" text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            onClick={() => setCreateDialog(true)}
+            onClick={() => setCreateDialog("create")}
           >
             Create Post
           </Button>
@@ -355,7 +409,10 @@ export default function User() {
                 username={post.authorName}
                 content={post.content}
                 imageUrl={post.imageUrl}
-                onEditToggle={() => {}}
+                onEditToggle={() => {
+                  setCreateDialog("edit");
+                  setSelectedPost(post);
+                }}
                 onDeleteToggle={() => {
                   setDeleteDialog(true);
                   setSelectedPost(post);
