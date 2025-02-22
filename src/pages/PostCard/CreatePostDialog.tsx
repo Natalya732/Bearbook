@@ -17,6 +17,7 @@ import { X } from "react-feather";
 
 interface createPostProps {
   open: boolean;
+  isEdit?: boolean;
   onOpenChange: (open: boolean) => void;
   newPost: Post & { imageFile: null | File };
   createNewPost: () => {};

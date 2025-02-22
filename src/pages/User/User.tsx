@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useApp } from "@contexts/AppContext";
 import { Post, ProfileData } from "@utils/definitions";
 import supabase, { generateImageUrl } from "@utils/supabase";
-import { Loader, LogOut, } from "react-feather";
+import { Loader, LogOut } from "react-feather";
 import toast from "react-hot-toast";
 import PostCard from "@pages/PostCard/PostCard";
 import { generateUUID, uploadImage } from "@utils/helper";
@@ -10,9 +10,10 @@ import { Button } from "@components/ui/button";
 import ProfileCard from "./ProfileCard";
 import CreatePostDialog from "../PostCard/CreatePostDialog";
 import "@styles/User.scss";
+import DeleteDialog from "@pages/PostCard/DeleteDialog";
+import Footer from "@components/layouts/Footer";
 
-
-const LoaderProfile = () => {
+export const LoaderProfile = () => {
   return (
     <div className="flex justify-center items-center p-4 h-screen">
       <Loader className="w-8 h-8 animate-spin text-blue-500" />
@@ -20,16 +21,18 @@ const LoaderProfile = () => {
   );
 };
 
+export type PostError = {
+  content: string;
+  imageUrl: string;
+};
+
 export default function User() {
   const { user } = useApp();
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createDialog, setCreateDialog] = useState<boolean>(false);
-
-  type PostError = {
-    content: string;
-    imageUrl: string;
-  };
+  const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
+  const [selectedPost, setSelectedPost] = useState<null | Post>(null);
 
   const profileObject = {
     id: "",
@@ -65,6 +68,7 @@ export default function User() {
     content: "",
     imageUrl: "",
   });
+
   const [newPost, setNewPost] = useState<Post & { imageFile: null | File }>(
     postObject
   );
@@ -157,6 +161,19 @@ export default function User() {
     return res;
   }
 
+  function onValueChange(f: string, val: string | File): void {
+    setEditedProfileData((prev) => ({ ...prev, [f]: val }));
+  }
+
+  function handleDialogChange(f: string, val: string | File | null): void {
+    setNewPost((prev) => ({ ...prev, [f]: val }));
+  }
+
+  function handleCancelDialog() {
+    setCreateDialog(false);
+    setNewPost(postObject);
+  }
+
   async function getAllPosts(userId: string) {
     try {
       setIsLoading(true);
@@ -239,23 +256,29 @@ export default function User() {
       if (error) throw new Error(error.message);
       if (status === 201) toast.success("Successfully Post created");
       user && getAllPosts(user.id);
-      setCreateDialog(false);
+      handleCancelDialog();
     } catch (err) {
       console.log("error", err);
     }
   }
 
-  function onValueChange(f: string, val: string | File): void {
-    setEditedProfileData((prev) => ({ ...prev, [f]: val }));
-  }
-
-  function handleDialogChange(f: string, val: string | File | null): void {
-    setNewPost((prev) => ({ ...prev, [f]: val }));
-  }
-
-  function handleCancelDialog() {
-    setCreateDialog(false);
-    setNewPost(postObject);
+  async function handleDeletePost(postId: string) {
+    if (!postId) return;
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.from("Posts").delete().eq("id", postId);
+      setIsLoading(false);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Successfully deleted");
+      getAllPosts(user ? user.id : "");
+    } catch (err) {
+      toast.error("Failed to delete Post");
+    } finally {
+      setDeleteDialog(false);
+    }
   }
 
   useEffect(() => {
@@ -266,9 +289,9 @@ export default function User() {
   return isLoading ? (
     <LoaderProfile />
   ) : (
-    <div className="w-full min-h-screen">
-      <div className="h-64 relative p-4 text-white w-full bg-gradient-to-r from-blue-500 to-purple-600 ">
-        <div className="cursor-pointer flex absolute top-3 right-3 flex-row gap-5">
+    <div className="w-full min-h-screen flex flex-col justify-center items-center">
+      <div className="h-64 p-4 relative text-white w-full bg-gradient-to-r from-blue-500 to-purple-600 flex flex-col">
+        <div className="cursor-pointer flex ml-auto flex-row gap-5">
           <span>Follow</span>
           <span
             onClick={() => {
@@ -282,51 +305,74 @@ export default function User() {
           </span>
           <LogOut onClick={handleSignOut} />
         </div>
-        <div className="w-full justify-center flex flex-col items-center">
+        <div className="flex justify-center items-center">
           <ProfileCard
             editedProfileData={editedProfileData}
             onValueChange={onValueChange}
             isEditing={isEditing}
           />
-
-          {createDialog && (
-            <CreatePostDialog
-              open={createDialog}
-              onOpenChange={setCreateDialog}
-              newPost={newPost}
-              createNewPost={createNewPost}
-              handleDialogChange={handleDialogChange}
-              postErr={postErr}
-              handleCancelDialog={handleCancelDialog}
-            />
-          )}
-
-          {/* Posts Section */}
-          <div className="mt-8 pb-8 postContainer ">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
-              <Button
-                className=" text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-                onClick={() => setCreateDialog(true)}
-              >
-                Create Post
-              </Button>
-            </div>
-            <div className="space-y-6">
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  id={post.id}
-                  userImage={post.authorImage || ""}
-                  username={post.authorName}
-                  content={post.content}
-                  imageUrl={post.imageUrl}
-                />
-              ))}
-            </div>
-          </div>
         </div>
       </div>
+
+      {createDialog && (
+        <CreatePostDialog
+          open={createDialog}
+          onOpenChange={setCreateDialog}
+          newPost={newPost}
+          createNewPost={createNewPost}
+          handleDialogChange={handleDialogChange}
+          postErr={postErr}
+          handleCancelDialog={handleCancelDialog}
+        />
+      )}
+
+      {deleteDialog && selectedPost && (
+        <DeleteDialog
+          open={deleteDialog}
+          id={selectedPost.id}
+          handleCancel={() => setDeleteDialog(false)}
+          handleDelete={handleDeletePost}
+        />
+      )}
+
+      <div
+        className={`postContainer mb-12 ${isEditing ? "mt-100" : "mt-80"}`}
+      >
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
+          <Button
+            className=" text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            onClick={() => setCreateDialog(true)}
+          >
+            Create Post
+          </Button>
+        </div>
+        <div className="space-y-6">
+          {posts.length > 0 ? (
+            posts.map((post) => (
+              <PostCard
+                key={post.id}
+                id={post.id}
+                userImage={post.authorImage || ""}
+                username={post.authorName}
+                content={post.content}
+                imageUrl={post.imageUrl}
+                onEditToggle={() => {}}
+                onDeleteToggle={() => {
+                  setDeleteDialog(true);
+                  setSelectedPost(post);
+                }}
+              />
+            ))
+          ) : (
+            <div className="text-gray-700  font-semibold mt-4">
+              You haven't posted anything yet.{" "}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Footer />
     </div>
   );
 }

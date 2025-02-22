@@ -19,7 +19,7 @@ export default function ProfileCard({
   return (
     <div
       className={`profile text-zinc-800 h-fit p-6 rounded shadow-lg ${
-        isEditing ? "mt-16" : "mt-32"
+        isEditing ? "mt-14" : "mt-28"
       }`}
     >
       <div className="upper_segment flex items-center gap-6 w-full">

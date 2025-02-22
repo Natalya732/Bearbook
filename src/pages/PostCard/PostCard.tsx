@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Edit2, MoreHorizontal, Trash2 } from "react-feather";
-import DeleteDialog from "./DeleteDialog";
 
 interface PostCardProps {
   id: string;
@@ -8,6 +7,8 @@ interface PostCardProps {
   username: string;
   content: string;
   imageUrl?: string;
+  onDeleteToggle: () => void;
+  onEditToggle: () => void;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -16,17 +17,12 @@ const PostCard: React.FC<PostCardProps> = ({
   username,
   content,
   imageUrl,
+  onDeleteToggle,
+  onEditToggle
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const menuRef = useRef<HTMLDivElement | null>(null);
-
-
-  // ********************** Delete Post *******************
-
-
-  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,7 +30,6 @@ const PostCard: React.FC<PostCardProps> = ({
         setShowMenu(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -43,17 +38,17 @@ const PostCard: React.FC<PostCardProps> = ({
     {
       label: "Edit",
       icon: <Edit2 size={18} />,
-      action: () => console.log("Edit clicked"),
+      action: () => onEditToggle,
     },
     {
       label: "Delete",
       icon: <Trash2 size={18} />,
-      action: () => setShowDeleteDialog(true),
+      action: onDeleteToggle,
     },
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-4 relative">
+    <div key={id} className="bg-white rounded-lg shadow-md p-4 mb-4 relative">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <img
@@ -65,12 +60,15 @@ const PostCard: React.FC<PostCardProps> = ({
             <h3 className="font-semibold text-gray-800">{username}</h3>
           </div>
         </div>
-        {showDeleteDialog && (
+
+        {/* {showDeleteDialog && (
           <DeleteDialog
             open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
+            id={id}
+            handleCancel={onCancelDeletion}
+            handleDelete={onDeleteDialog}
           />
-        )}
+        )} */}
 
         <div className="relative" ref={menuRef}>
           <MoreHorizontal
