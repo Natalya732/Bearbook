@@ -28,11 +28,14 @@ export type PostError = {
 
 export default function User() {
   const { user } = useApp();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createDialog, setCreateDialog] = useState<string>("");
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
   const [selectedPost, setSelectedPost] = useState<null | Post>(null);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof typeof profileObject, string>>
+  >({});
 
   const profileObject = {
     id: "",
@@ -49,6 +52,9 @@ export default function User() {
     following: 0,
     isFollowing: false,
   };
+  const [editedProfileData, setEditedProfileData] = useState<
+    ProfileData & { userFile: null | File }
+  >(profileObject);
 
   const postObject = {
     id: "",
@@ -59,9 +65,6 @@ export default function User() {
     authorName: "",
     authorImage: "",
   };
-  const [editedProfileData, setEditedProfileData] = useState<
-    ProfileData & { userFile: null | File }
-  >(profileObject);
 
   const [postErr, setPostErr] = useState<PostError>({
     content: "",
@@ -118,16 +121,66 @@ export default function User() {
     }
   }
 
+  const validateProfileData = (
+    data: ProfileData & { userFile: null | File }
+  ) => {
+    let errors: { [key in keyof typeof profileObject]?: string } = {};
+    if (!data.name?.trim()) errors.name = "Name is required";
+    if (data.name?.length > 50) errors.name = "Only 50 characters are allowed";
+    if (!data.role?.trim()) errors.role = "Role is required";
+    if (data.role?.length > 50) errors.role = "Only 50 characters are allowed";
+    if (!data.location?.trim()) errors.location = "Location is required";
+    if (!data.bio?.trim()) errors.bio = "Description is required";
+    if (data.bio?.length > 500) errors.bio = "Only 500 characters are allowed";
+
+    if (!data.email?.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(data.email)) {
+      errors.email = "Invalid email format";
+    } else if (data.email?.length > 50){
+      errors.email = "Only 50 characters are allowed";
+}
+
+    if (
+      data.github &&
+      !/^https:\/\/github\.com\/[a-zA-Z0-9-]+$/.test(data.github)
+    ) {
+      errors.github = "Invalid GitHub URL";
+    }
+    console.log("between validateion field");
+
+    if (
+      data.linkedIn &&
+      !/^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-]+$/.test(data.linkedIn)
+    ) {
+      errors.linkedIn = "Invalid LinkedIn URL";
+    }
+
+    if (data.userFile && !["image/jpg"].includes(data.userFile.type)) {
+      errors.userFile = "Profile image must be a JPG file";
+    }
+
+    console.log("the error updated", errors);
+    setErrors(errors);
+    return errors;
+  };
+
   const handleEditProfile = async () => {
-    console.log("edite", editedProfileData);
     if (!editedProfileData) return;
+    const errors = validateProfileData(editedProfileData);
+    console.log("inside edit profile", handleEditProfile);
+    if (Object.keys(errors).length > 0) {
+      console.log("Validation Errors:", errors);
+      return;
+    } else {
+      console.log("Profile data is valid!");
+    }
     try {
       setIsLoading(true);
       const userImageUrl =
         editedProfileData.userFile &&
         (await handleFileUpload(editedProfileData.userFile, "PostImages"));
 
-      console.log("profile");
       if (!userImageUrl) return;
 
       const { userFile, ...updatedEditedProfile } = editedProfileData;
@@ -370,7 +423,9 @@ export default function User() {
             editedProfileData={editedProfileData}
             onValueChange={onValueChange}
             isEditing={isEditing}
+            errors={errors}
             handleEditProfile={handleEditProfile}
+            handleCancel={() => setIsEditing(false)}
           />
         </div>
       </div>

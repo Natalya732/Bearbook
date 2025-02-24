@@ -9,6 +9,10 @@ interface ProfileCardProps {
   onValueChange: (f: string, val: string | File) => void;
   isEditing: boolean;
   handleEditProfile: () => void;
+  errors: Partial<
+    Record<keyof ProfileData & { userFile: null | File }, string>
+  >;
+  handleCancel: () => void;
 }
 
 export default function ProfileCard({
@@ -16,8 +20,9 @@ export default function ProfileCard({
   onValueChange,
   isEditing,
   handleEditProfile,
+  handleCancel,
+  errors,
 }: ProfileCardProps) {
-
   const imgRef = useRef<HTMLInputElement>(null);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -61,6 +66,7 @@ export default function ProfileCard({
                 isEdit={isEditing}
                 value={editedProfileData.name}
                 field="name"
+                error={(errors as any)?.name ?? ""}
                 styles="title"
                 inputStyle=""
                 onUpdate={onValueChange}
@@ -70,6 +76,7 @@ export default function ProfileCard({
                 isEdit={isEditing}
                 value={editedProfileData.role}
                 field="role"
+                error={(errors as any)?.role ?? ""}
                 styles="role"
                 inputStyle=""
                 onUpdate={onValueChange}
@@ -85,6 +92,7 @@ export default function ProfileCard({
                   value={editedProfileData.location}
                   field="location"
                   styles="location"
+                  error={(errors as any)?.location ?? ""}
                   inputStyle=""
                   onUpdate={onValueChange}
                 />
@@ -101,6 +109,7 @@ export default function ProfileCard({
             isEdit={isEditing}
             value={editedProfileData.bio}
             field="bio"
+            error={(errors as any)?.bio ?? ""}
             styles="bio text-zinc-500"
             inputStyle=""
             onUpdate={onValueChange}
@@ -119,6 +128,7 @@ export default function ProfileCard({
                   isEdit={isEditing}
                   value={editedProfileData.email}
                   field="email"
+                  error={(errors as any)?.email ?? ""}
                   inputStyle="text-gray-700 border rounded p-2"
                   styles="text-zinc-500"
                   onUpdate={onValueChange}
@@ -136,6 +146,7 @@ export default function ProfileCard({
                   isEdit={isEditing}
                   value={editedProfileData.github}
                   field="github"
+                  error={(errors as any)?.github ?? ""}
                   styles="text-zinc-500"
                   inputStyle="text-gray-700 border rounded p-2"
                   onUpdate={onValueChange}
@@ -149,6 +160,7 @@ export default function ProfileCard({
                   isEdit={isEditing}
                   value={editedProfileData.linkedIn}
                   field="linkedIn"
+                  error={(errors as any)?.linkedIn ?? ""}
                   styles="text-zinc-500"
                   inputStyle="text-gray-700 border rounded p-2"
                   onUpdate={onValueChange}
@@ -159,7 +171,10 @@ export default function ProfileCard({
         </div>
       </div>
       {isEditing && (
-        <div className="flex float-right my-3">
+        <div className="flex gap-4 justify-center items-center float-right my-3">
+          <span className="cursor-pointer" onClick={handleCancel}>
+            Cancel
+          </span>
           <Button onClick={handleEditProfile}>Save Profile</Button>
         </div>
       )}

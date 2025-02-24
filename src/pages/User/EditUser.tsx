@@ -7,14 +7,7 @@ import { Label } from "@components/ui/label";
 import { Textarea } from "@components/ui/textarea";
 
 const EditComponent = React.memo(
-  ({
-    isEdit,
-    value,
-    field,
-    styles,
-    inputStyle,
-    onUpdate,
-  }: EditComponentProps) => {
+  ({ isEdit, value, field, styles, error, onUpdate }: EditComponentProps) => {
     const [countries, setCountries] = useState<String[]>([]);
 
     const handleChange = (newValue: string) => {
@@ -31,29 +24,27 @@ const EditComponent = React.memo(
       fetchCountries();
     }, []);
 
-    if (!isEdit) return <div className={styles}>{value}</div>;
+    if (!isEdit) return <div className={styles}>{value || `No ${field}`}</div>;
 
     if (field === "bio") {
       return (
-        // <div className="flex flex-col mt-7">
-        //   <label className="mt-4 text-base text-zinc-700 font-semibold">
-        //     Enter your bio
-        //   </label>
-        //   <textarea
-        //     value={value || ""}
-        //     onChange={(e) => handleChange(e.target.value)}
-        //     className="w-full text-zinc-700 border rounded p-2 mt-1"
-        //     rows={4}
-        //   />
-        // </div>
-        <div className="grid w-full gap-1.5 mt-3">
-          <Label htmlFor="message"> Enter bio</Label>
+        <div className={`grid w-full gap-1.5 mt-3 `}>
+          <Label
+            htmlFor="message"
+            className="drop-shadow-md text-sm sm:text-base font-medium"
+          >
+            Enter bio <span className="text-red-500">*</span>
+          </Label>
           <Textarea
             value={value || ""}
+            className={`w-full bg-white/90 text-zinc-900 border border-blue-300 focus:border-purple-500 rounded-lg p-2 shadow-md outline-none focus:ring-2 focus:ring-purple-400 ${
+              error ? "border-red-500 border-2" : ""
+            }`}
             onChange={(e) => handleChange(e.target.value)}
             placeholder="Write about yourself..."
             id="message"
           />
+          <span className="text-red-500">{error}</span>
         </div>
       );
     }
@@ -61,31 +52,32 @@ const EditComponent = React.memo(
     if (field === "location") {
       return (
         <div className="flex flex-col gap-2">
-          <label className="text-zinc-700 text-base font-semibold">
-            Select Location
-          </label>
-          <CountrySelect />
+          <Label
+            htmlFor="message"
+            className="drop-shadow-md text-sm sm:text-base font-medium"
+          >
+            Select Location <span className="text-red-500">*</span>
+          </Label>
+          <CountrySelect error={error ?? ""} />
+          <span className="text-red-500">{error}</span>
         </div>
       );
     }
 
     return (
-      // <div className={`flex flex-col ${field === "role" ? "mt-3" : ""}`}>
-      //   <label className="text-base text-zinc-700 font-semibold">Enter {field}</label>
-      //   <input
-      //     type="text"
-      //     value={value || ""}
-      //     className={`bg-zinc-100 mt-1  border rounded p-1 ${inputStyle}`}
-      //     onChange={(e) => handleChange(e.target.value)}
-      //   />
-      // </div>
       <div
-        className={`grid w-full max-w-sm items-center gap-1.5 ${
+        className={`flex flex-col gap-2 w-full max-w-sm items-start ${
           field === "role" ? "mt-3" : ""
         }`}
       >
-        <Label htmlFor={field}>
-          {field.charAt(0).toUpperCase().concat(field.slice(1, field.length))}
+        <Label
+          htmlFor={field}
+          className="drop-shadow-md text-sm sm:text-base font-medium"
+        >
+          {field.charAt(0).toUpperCase().concat(field.slice(1, field.length))}{" "}
+          {["name", "role", "email"].includes(field) && (
+            <span className="text-red-500">*</span>
+          )}
         </Label>
         <Input
           type={field === "email" ? "email" : "text"}
@@ -93,7 +85,11 @@ const EditComponent = React.memo(
           id={field}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={`Enter ${field}`}
+          className={`w-full bg-white/90 text-zinc-900 border border-blue-300 focus:border-purple-500 rounded-lg p-2 shadow-md outline-none focus:ring-2 focus:ring-purple-400 ${
+            error ? "border-red-500 border-2" : ""
+          }`}
         />
+        <span className="text-red-500 flex w-fit">{error}</span>
       </div>
     );
   }

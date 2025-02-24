@@ -42,5 +42,6 @@ export interface EditComponentProps {
   field: string;
   styles: string;
   inputStyle: string;
+  error?: string;
   onUpdate: (newValue: string, field: string) => void;
 }
