@@ -17,23 +17,25 @@ const Footer = () => {
 
         <div>
           <h2 className="text-sm mt-2 font- max-w-72 flex-wrap text-right">
-          Let’s Connect & Create! 
+            Let’s Connect & Create!
           </h2>
           <div className="float-right flex space-x-4 mt-3">
             <a
-              href="#"
+              target="self"
+              href="https://x.com/nikitapand76674"
               className="bg-white p-2 rounded-full text-blue-500 hover:text-purple-600 transition"
             >
               <Twitter size={18} />
             </a>
             <a
-              href="#"
+              target="self"
+              href="https://www.linkedin.com/in/nk-pandey/"
               className="bg-white p-2 rounded-full text-blue-500 hover:text-purple-600 transition"
             >
               <Linkedin size={18} />
             </a>
             <a
-              href="#"
+              href={`mailto:nikkupandey0602@gmail.com`}
               className="bg-white p-2 rounded-full text-blue-500 hover:text-purple-600 transition"
             >
               <Mail size={18} />
