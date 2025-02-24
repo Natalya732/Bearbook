@@ -12,6 +12,7 @@ import CreatePostDialog from "../PostCard/CreatePostDialog";
 import "@styles/User.scss";
 import DeleteDialog from "@pages/PostCard/DeleteDialog";
 import Footer from "@components/layouts/Footer";
+import { getCountries } from "@utils/api";
 
 export const LoaderProfile = () => {
   return (
@@ -70,7 +71,7 @@ export default function User() {
     content: "",
     imageUrl: "",
   });
-  console.log("isEdit", isEditing);
+
   const [newPost, setNewPost] = useState<Post & { imageFile: null | File }>(
     postObject
   );
@@ -129,7 +130,7 @@ export default function User() {
     if (data.name?.length > 50) errors.name = "Only 50 characters are allowed";
     if (!data.role?.trim()) errors.role = "Role is required";
     if (data.role?.length > 50) errors.role = "Only 50 characters are allowed";
-    if (!data.location?.trim()) errors.location = "Location is required";
+    if (!data.location) errors.location = "Location is required";
     if (!data.bio?.trim()) errors.bio = "Description is required";
     if (data.bio?.length > 500) errors.bio = "Only 500 characters are allowed";
 
@@ -137,9 +138,9 @@ export default function User() {
       errors.email = "Email is required";
     } else if (!/^\S+@\S+\.\S+$/.test(data.email)) {
       errors.email = "Invalid email format";
-    } else if (data.email?.length > 50){
+    } else if (data.email?.length > 50) {
       errors.email = "Only 50 characters are allowed";
-}
+    }
 
     if (
       data.github &&
@@ -147,7 +148,6 @@ export default function User() {
     ) {
       errors.github = "Invalid GitHub URL";
     }
-    console.log("between validateion field");
 
     if (
       data.linkedIn &&
@@ -160,7 +160,6 @@ export default function User() {
       errors.userFile = "Profile image must be a JPG file";
     }
 
-    console.log("the error updated", errors);
     setErrors(errors);
     return errors;
   };
@@ -168,7 +167,6 @@ export default function User() {
   const handleEditProfile = async () => {
     if (!editedProfileData) return;
     const errors = validateProfileData(editedProfileData);
-    console.log("inside edit profile", handleEditProfile);
     if (Object.keys(errors).length > 0) {
       console.log("Validation Errors:", errors);
       return;
@@ -231,6 +229,8 @@ export default function User() {
 
   async function getAllPosts(userId: string) {
     try {
+      const count = await getCountries();
+      console.log("the countries", count);
       setIsLoading(true);
       const { data: posts, error } = await supabase
         .from("User")
@@ -252,7 +252,6 @@ export default function User() {
       setPosts(postsArray);
       return null;
     } catch (err) {
-      console.log("Error in getting all posts", err);
       toast.error("Error fetching all the posts");
     } finally {
       setIsLoading(false);
