@@ -1,6 +1,5 @@
-import { getCountries } from "@utils/api";
+import React from "react";
 import { EditComponentProps } from "@utils/definitions";
-import React, { useEffect, useState } from "react";
 import { CountrySelect } from "./CountrySelect";
 import { Input } from "@components/ui/input";
 import { Label } from "@components/ui/label";
@@ -8,21 +7,9 @@ import { Textarea } from "@components/ui/textarea";
 
 const EditComponent = React.memo(
   ({ isEdit, value, field, styles, error, onUpdate }: EditComponentProps) => {
-    const [countries, setCountries] = useState<String[]>([]);
-
     const handleChange = (newValue: string) => {
       onUpdate(field, newValue);
     };
-
-    useEffect(() => {
-      async function fetchCountries() {
-        const res = await getCountries();
-        if (res) setCountries(res);
-        return;
-      }
-
-      fetchCountries();
-    }, []);
 
     if (!isEdit) return <div className={styles}>{value || `No ${field}`}</div>;
 

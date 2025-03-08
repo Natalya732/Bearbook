@@ -12,7 +12,6 @@ import CreatePostDialog from "../PostCard/CreatePostDialog";
 import "@styles/User.scss";
 import DeleteDialog from "@pages/PostCard/DeleteDialog";
 import Footer from "@components/layouts/Footer";
-import { getCountries } from "@utils/api";
 
 export const LoaderProfile = () => {
   return (
@@ -229,8 +228,6 @@ export default function User() {
 
   async function getAllPosts(userId: string) {
     try {
-      const count = await getCountries();
-      console.log("the countries", count);
       setIsLoading(true);
       const { data: posts, error } = await supabase
         .from("User")

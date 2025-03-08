@@ -45,3 +45,8 @@ export interface EditComponentProps {
   error?: string;
   onUpdate: (newValue: string, field: string) => void;
 }
+
+export interface GetCountriesResponse {
+  data: string[];
+  totalCount: number;
+}

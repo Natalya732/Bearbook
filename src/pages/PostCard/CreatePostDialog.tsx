@@ -42,7 +42,6 @@ export default function CreatePostDialog({
   handleEditPost,
 }: createPostProps) {
   const postImgRef = useRef<HTMLInputElement>(null);
-console.log("new", newPost)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
