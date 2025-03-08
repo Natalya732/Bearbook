@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import supabase from "@utils/supabase";
 import { Session } from "@supabase/supabase-js";
 import User from "@pages/User/User";
+import Error from "@pages/Error/Error";
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +42,8 @@ const ProtectedRoute: React.FC = () => {
 
 export const applicationRoutes: RouteObject[] = [
   { path: "/auth", element: <Auth /> },
+  { path: "/*", element: <Error /> },
+
   {
     path: "/",
     element: <ProtectedRoute />,
@@ -68,6 +71,6 @@ export default function App() {
     <>
       <Toaster position="top-right" reverseOrder={false} />
       <RouterProvider router={myRoutes} />
-  </>
+    </>
   );
 }
