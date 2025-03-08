@@ -124,6 +124,7 @@ export default function User() {
   const validateProfileData = (
     data: ProfileData & { userFile: null | File }
   ) => {
+
     let errors: { [key in keyof typeof profileObject]?: string } = {};
     if (!data.name?.trim()) errors.name = "Name is required";
     if (data.name?.length > 50) errors.name = "Only 50 characters are allowed";

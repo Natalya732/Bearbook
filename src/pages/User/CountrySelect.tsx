@@ -16,7 +16,13 @@ import { getCountries } from "@utils/api";
 import { Loader } from "react-feather";
 import { GetCountriesResponse } from "@utils/definitions";
 
-export function CountrySelect({ error }: { error: string }) {
+export function CountrySelect({
+  error,
+  onChange,
+}: {
+  error: string;
+  onChange: (val: string) => void;
+}) {
   const listRef = useRef<HTMLDivElement | null>(null);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -27,7 +33,6 @@ export function CountrySelect({ error }: { error: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-
   useEffect(() => {
     async function fetchCountries() {
       setIsLoading(pagination.page === 1);
@@ -56,7 +61,7 @@ export function CountrySelect({ error }: { error: string }) {
       setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
     }
   }
-
+  
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -93,6 +98,7 @@ export function CountrySelect({ error }: { error: string }) {
                     <CommandItem
                       key={country}
                       onSelect={() => {
+                        onChange(country);
                         setSelectedCountry(country);
                         setOpen(false);
                       }}

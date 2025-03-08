@@ -45,7 +45,7 @@ const EditComponent = React.memo(
           >
             Select Location <span className="text-red-500">*</span>
           </Label>
-          <CountrySelect error={error ?? ""} />
+          <CountrySelect error={error ?? ""} onChange={handleChange} />
           <span className="text-red-500">{error}</span>
         </div>
       );
