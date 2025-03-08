@@ -28,7 +28,7 @@ export type PostError = {
 
 export default function User() {
   const { user } = useApp();
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createDialog, setCreateDialog] = useState<string>("");
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
@@ -124,7 +124,6 @@ export default function User() {
   const validateProfileData = (
     data: ProfileData & { userFile: null | File }
   ) => {
-
     let errors: { [key in keyof typeof profileObject]?: string } = {};
     if (!data.name?.trim()) errors.name = "Name is required";
     if (data.name?.length > 50) errors.name = "Only 50 characters are allowed";
