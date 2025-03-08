@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@contexts/AppContext";
 import { Post, ProfileData } from "@utils/definitions";
-import supabase, { generateImageUrl } from "@utils/supabase";
+import { generateImageUrl } from "@utils/supabase";
 import { Loader, LogOut } from "react-feather";
 import toast from "react-hot-toast";
 import PostCard from "@pages/PostCard/PostCard";
@@ -12,6 +12,13 @@ import CreatePostDialog from "../PostCard/CreatePostDialog";
 import "@styles/User.scss";
 import DeleteDialog from "@pages/PostCard/DeleteDialog";
 import Footer from "@components/layouts/Footer";
+import { fetchUserProfile, signOut, updateUserTable } from "@/services/UserApi";
+import {
+  deletePost,
+  fetchAllPosts,
+  insertPost,
+  updatePost,
+} from "@/services/PostApi";
 
 export const LoaderProfile = () => {
   return (
@@ -50,8 +57,8 @@ export default function User() {
     profileImage: "",
     followers: 0,
     following: 0,
-    isFollowing: false,
   };
+  
   const [editedProfileData, setEditedProfileData] = useState<
     ProfileData & { userFile: null | File }
   >(profileObject);
@@ -70,7 +77,6 @@ export default function User() {
     content: "",
     imageUrl: "",
   });
-
   const [newPost, setNewPost] = useState<Post & { imageFile: null | File }>(
     postObject
   );
@@ -80,34 +86,16 @@ export default function User() {
   //   ******************************* Integration *****************************
 
   async function getUserProfile(userId: string) {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from("User")
-        .select("*")
-        .eq("id", userId)
-        .single();
-      if (error) {
-        toast.error(error.message);
-        return null;
-      }
-      if (data) {
-        setEditedProfileData({ ...data });
-      }
-      return data;
-    } catch (err) {
-      let errorMsg =
-        err instanceof Error
-          ? err.message
-          : "Something went wrong fetching User Profile";
-      toast.error(errorMsg);
-    } finally {
-      setIsLoading(false);
+    setIsLoading(true);
+    const data = await fetchUserProfile(userId);
+    if (data) {
+      setEditedProfileData({ ...data, userFile: null });
     }
+    setIsLoading(false);
   }
 
   async function handleFileUpload(file: File | null, bucket: string) {
-    if (!file || !(file instanceof File)) return false;
+    if (!file || !(file instanceof File)) return "";
     try {
       setIsLoading(true);
       const res = await uploadImage(file, bucket);
@@ -129,7 +117,7 @@ export default function User() {
     if (data.name?.length > 50) errors.name = "Only 50 characters are allowed";
     if (!data.role?.trim()) errors.role = "Role is required";
     if (data.role?.length > 50) errors.role = "Only 50 characters are allowed";
-    if (!data.location) errors.location = "Location is required";
+    if (!data.location?.trim()) errors.location = "Location is required";
     if (!data.bio?.trim()) errors.bio = "Description is required";
     if (data.bio?.length > 500) errors.bio = "Only 500 characters are allowed";
 
@@ -143,19 +131,23 @@ export default function User() {
 
     if (
       data.github &&
-      !/^https:\/\/github\.com\/[a-zA-Z0-9-]+$/.test(data.github)
+      !/^https:\/\/github\.com\/[a-zA-Z0-9-]+\/?$/.test(data.github)
     ) {
       errors.github = "Invalid GitHub URL";
     }
 
+    console.log("between validation field");
+
     if (
       data.linkedIn &&
-      !/^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-]+$/.test(data.linkedIn)
+      !/^https:\/\/www\.linkedin\.com\/in\/[a-zA-Z0-9-_]+\/?$/.test(
+        data.linkedIn
+      )
     ) {
       errors.linkedIn = "Invalid LinkedIn URL";
     }
 
-    if (data.userFile && !["image/jpg"].includes(data.userFile.type)) {
+    if (data.userFile && !data.userFile.name.endsWith(".jpg")) {
       errors.userFile = "Profile image must be a JPG file";
     }
 
@@ -172,45 +164,30 @@ export default function User() {
     } else {
       console.log("Profile data is valid!");
     }
-    try {
-      setIsLoading(true);
-      const userImageUrl =
-        editedProfileData.userFile &&
-        (await handleFileUpload(editedProfileData.userFile, "PostImages"));
 
-      if (!userImageUrl) return;
+    setIsLoading(true);
+    const userImageUrl =
+      editedProfileData.userFile &&
+      (await handleFileUpload(editedProfileData.userFile, "UserImage"));
 
-      const { userFile, ...updatedEditedProfile } = editedProfileData;
-      updatedEditedProfile.profileImage = userImageUrl;
+    const { userFile, ...updatedEditedProfile } = editedProfileData;
+    updatedEditedProfile.profileImage = userImageUrl || "";
 
-      toast.success("Successfully Image Uploaded!");
+    toast.success("Successfully Image Uploaded!");
 
-      const { error } = await supabase
-        .from("User")
-        .update({
-          ...updatedEditedProfile,
-        })
-        .eq("id", user?.id);
+    await updateUserTable({
+      userId: user?.id || "",
+      data: updatedEditedProfile,
+    });
 
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      setIsEditing(false);
-      toast.success("Profile updated successfully !");
-    } catch (err) {
-      toast.error("Failed to update profile!");
-    } finally {
-      setIsLoading(false);
-      setIsEditing((prev) => !prev);
-    }
+    setIsEditing(false);
+    setIsLoading(false);
   };
 
   async function handleSignOut() {
     setIsLoading(true);
-    const res = await supabase.auth.signOut();
+    await signOut();
     setIsLoading(false);
-    return res;
   }
 
   function onValueChange(f: string, val: string | File): void {
@@ -227,32 +204,12 @@ export default function User() {
   }
 
   async function getAllPosts(userId: string) {
-    try {
-      setIsLoading(true);
-      const { data: posts, error } = await supabase
-        .from("User")
-        .select(`name, profileImage, Posts (content, imageUrl, created_at,id)`)
-        .order("created_at", { ascending: false })
-        .eq("id", userId);
-
-      if (error) throw new Error(error.message);
-
-      const postsArray: Post[] = posts
-        .map((item) => {
-          return item.Posts.map((post) => ({
-            authorName: item.name,
-            authorImage: item.profileImage,
-            ...post,
-          }));
-        })
-        .flat();
-      setPosts(postsArray);
-      return null;
-    } catch (err) {
-      toast.error("Error fetching all the posts");
-    } finally {
-      setIsLoading(false);
+    setIsLoading(true);
+    const data = await fetchAllPosts(userId);
+    if (data) {
+      setPosts(data);
     }
+    setIsLoading(false);
   }
 
   function validatePost() {
@@ -276,111 +233,67 @@ export default function User() {
 
   async function handleEditPost() {
     if (!newPost) return;
-    try {
-      setIsLoading(true);
-      const validation = validatePost();
+    setIsLoading(true);
+    const validation = validatePost();
 
-      if (!validation) {
-        return;
-      }
+    if (!validation) return;
 
-      let postImageUrl;
-
-      if (newPost.imageFile) {
-        postImageUrl = await handleFileUpload(newPost.imageFile, "PostImages");
-        postImageUrl && toast.success("Successfully Image Uploaded!");
-      }
-
-      const updatedPost = {
-        content: newPost.content,
-        imageUrl: newPost.imageUrl
-          ? newPost.imageUrl
-          : postImageUrl
-          ? postImageUrl
-          : "",
-        id: newPost.id,
-        author: editedProfileData.id,
-      };
-      const { error } = await supabase
-        .from("Posts")
-        .update({
-          ...updatedPost,
-        })
-        .eq("id", newPost.id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (!error) {
-        toast.success("Successfully Post Updated");
-      }
-      setCreateDialog("");
-      setNewPost(postObject);
-      getAllPosts(user ? user.id : "");
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Something went wrong";
-      toast.error(errorMsg);
-    } finally {
-      setIsLoading(false);
+    let postImageUrl;
+    if (newPost.imageFile) {
+      postImageUrl = await handleFileUpload(newPost.imageFile, "PostImages");
+      postImageUrl && toast.success("Successfully Image Uploaded!");
     }
+
+    const updatedPost = {
+      content: newPost.content,
+      imageUrl: newPost.imageUrl
+        ? newPost.imageUrl
+        : postImageUrl
+        ? postImageUrl
+        : "",
+      id: newPost.id,
+      author: editedProfileData.id,
+    };
+
+    await updatePost(updatedPost, user ? user.id : "");
+    await getAllPosts(user ? user.id : "");
+    setNewPost(postObject);
+    setCreateDialog("");
+    setIsLoading(false);
   }
 
   async function createNewPost() {
-    try {
-      setIsLoading(true);
-      const validation = validatePost();
+    const validation = validatePost();
 
-      if (!validation) {
-        return;
-      }
+    if (!validation) return;
+    setIsLoading(true);
 
-      let postImageUrl;
-      if (newPost.imageFile) {
-        postImageUrl = await handleFileUpload(newPost.imageFile, "PostImages");
-        postImageUrl && toast.success("Successfully Image Uploaded!");
-      }
-
-      const updatedPost = {
-        content: newPost.content,
-        imageUrl: postImageUrl || "",
-        id: generateUUID(),
-        author: editedProfileData.id,
-      };
-
-      const { error, status } = await supabase
-        .from("Posts")
-        .insert([updatedPost]);
-
-      if (error) throw new Error(error.message);
-      if (status === 201) toast.success("Successfully Post created");
-      user && getAllPosts(user.id);
-      handleCancelDialog();
-    } catch (err) {
-      console.log("error", err);
-    } finally {
-      setIsLoading(false);
+    let postImageUrl;
+    if (newPost.imageFile) {
+      postImageUrl = await handleFileUpload(newPost.imageFile, "PostImages");
+      postImageUrl && toast.success("Successfully Image Uploaded!");
     }
+
+    const updatedPost = {
+      content: newPost.content,
+      imageUrl: postImageUrl || "",
+      id: generateUUID(),
+      author: editedProfileData.id,
+    };
+
+    await insertPost(updatedPost, user?.id || "");
+    handleCancelDialog();
+    await getAllPosts(user ? user.id : "");
+    setIsLoading(false);
   }
 
   async function handleDeletePost(postId: string) {
     if (!postId) return;
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.from("Posts").delete().eq("id", postId);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      toast.success("Successfully deleted");
-      getAllPosts(user ? user.id : "");
-    } catch (err) {
-      toast.error("Failed to delete Post");
-    } finally {
-      setIsLoading(false);
-      setDeleteDialog(false);
-    }
+    setIsLoading(true);
+    await deletePost(postId, user?.id || "");
+    setDeleteDialog(false);
+    await getAllPosts(user ? user.id : "");
+    setIsLoading(false);
   }
 
   useEffect(() => {

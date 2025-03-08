@@ -58,11 +58,11 @@ const myRoutes = createBrowserRouter(applicationRoutes);
 export default function App() {
   const { user } = useApp();
 
-  // useEffect(() => {
-  //   if (window.location.pathname !== "/auth" && !user) {
-  //     window.location.replace("http://localhost:5173/auth");
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (window.location.pathname !== "/auth" && !user) {
+      window.location.replace("http://localhost:5173/auth");
+    }
+  }, []);
 
   return (
     <>

@@ -54,7 +54,7 @@ const Auth: React.FC = () => {
         updateUser(data?.user);
         return userData;
       }
-      return null;
+      return data;
     } catch (err) {
       console.error("Unexpected Error", err);
       toast.error("Something went wrong.Please try again.");
@@ -73,10 +73,8 @@ const Auth: React.FC = () => {
         toast.error(error.message);
         return null;
       }
-
       updateUser(data?.user);
-
-      return null;
+      return data;
     } catch (err) {
       console.log("Unexpected Error", err);
       toast.error("Something went wrong. Please try again.");
@@ -84,11 +82,12 @@ const Auth: React.FC = () => {
     }
   }
 
-  function handleSubmit(e: React.SyntheticEvent) {
-    e.preventDefault();
+  async function handleSubmit() {
     const selectedFn = isSignedUp ? signIn : signUp;
     setIsLoading(true);
-    const res = selectedFn();
+
+    const res = await selectedFn();
+
     setIsLoading(false);
     if (!res) return;
     navigate("/");

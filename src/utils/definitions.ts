@@ -24,7 +24,6 @@ export interface ProfileData {
   profileImage: string;
   following: number;
   followers: number;
-  isFollowing: boolean;
 }
 
 export interface Post {
