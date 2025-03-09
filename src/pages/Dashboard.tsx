@@ -4,64 +4,36 @@ import PostCard from "./PostCard/PostCard";
 import { Loader } from "react-feather";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@components/ui/button";
+import supabase from "@utils/supabase";
+import { useApp } from "@contexts/AppContext";
+import { getAllFollowingPosts } from "@/services/FollowsApi";
 interface Post {
   id: string;
   userImage: string;
   username: string;
   content: string;
   imageUrl?: string;
+  userId?: string;
 }
 
 export default function Dashboard() {
+  const { user } = useApp();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
+  const fetchMorePosts = async () => {
+    const newPosts = await getAllFollowingPosts(user?.id || "", page);
+    if (!newPosts) return;
+    setPosts((prev) => [...prev, ...newPosts]);
+    console.log({ newPosts });
+    setPage((prev) => prev + 1);
+    if (newPosts.length === 0) setHasMore(false);
+  };
   useEffect(() => {
     fetchMorePosts();
   }, []);
-
-
-  const fetchMorePosts = () => {
-    setTimeout(() => {
-      const newPosts = generateMockPosts(page);
-      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-      setPage((prevPage) => prevPage + 1);
-
-      if (page >= 5) {
-        setHasMore(false);
-      }
-    }, 1500);
-  };
-
-  const generateMockPosts = (pageNum: number): Post[] => {
-    return Array(10)
-      .fill(null)
-      .map((_, index) => ({
-        id: `${pageNum}-${index}`,
-        userImage: `https://i.pravatar.cc/150?img=${Math.floor(
-          Math.random() * 70
-        )}`,
-        username: `User ${Math.floor(Math.random() * 1000)}`,
-        content: [
-          "Just shipped a new feature! ",
-          "Beautiful sunset today ",
-          "Working on something exciting...",
-          "Great meeting with the team today!",
-          "Check out this amazing design",
-          "Learning new technologies is fun!",
-          "Coffee time ",
-          "Code review session was productive",
-          "Weekend project coming along nicely",
-          "Just deployed to production ",
-        ][Math.floor(Math.random() * 10)],
-        imageUrl:
-          Math.random() > 0.5
-            ? `https://picsum.photos/seed/${pageNum}-${index}/600/400`
-            : undefined,
-      }));
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -97,6 +69,7 @@ export default function Dashboard() {
                 key={post.id}
                 id={post.id}
                 userImage={post.userImage}
+                userId={post.userId || ""}
                 username={post.username}
                 content={post.content}
                 imageUrl={post.imageUrl}

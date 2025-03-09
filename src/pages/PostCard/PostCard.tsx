@@ -6,6 +6,7 @@ import {
   MoreHorizontal,
   Trash2,
 } from "react-feather";
+import { useNavigate } from "react-router-dom";
 
 interface PostCardProps {
   id: string;
@@ -13,6 +14,7 @@ interface PostCardProps {
   username: string;
   content: string;
   imageUrl?: string;
+  userId: string;
   onDeleteToggle?: () => void;
   onEditToggle?: () => void;
 }
@@ -21,15 +23,15 @@ const PostCard: React.FC<PostCardProps> = ({
   userImage,
   id,
   username,
+  userId,
   content,
   imageUrl,
   onDeleteToggle,
   onEditToggle,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-
+  const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -70,7 +72,10 @@ const PostCard: React.FC<PostCardProps> = ({
   return (
     <div key={id} className="bg-white rounded-lg shadow-md p-4 mb-4 relative">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
+        <div
+          className="flex items-center space-x-3 cursor-pointer"
+          onClick={() => navigate(`/user/${userId}`)}
+        >
           <img
             src={userImage}
             alt={username}

@@ -19,6 +19,7 @@ import {
   insertPost,
   updatePost,
 } from "@/services/PostApi";
+import { useParams } from "react-router-dom";
 
 export const LoaderProfile = () => {
   return (
@@ -34,51 +35,30 @@ export type PostError = {
 };
 
 export default function User() {
+  // * Profile id means you are viewing someone else's profile, but you or who is logged in has his id in user
   const { user } = useApp();
+  const { id: profileId } = useParams();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [createDialog, setCreateDialog] = useState<string>("");
   const [deleteDialog, setDeleteDialog] = useState<boolean>(false);
   const [selectedPost, setSelectedPost] = useState<null | Post>(null);
+  console.log("profile", profileId);
   const [errors, setErrors] = useState<
-    Partial<Record<keyof typeof profileObject, string>>
+    Partial<Record<keyof typeof editedProfileData, string>>
   >({});
 
-  const profileObject = {
-    id: "",
-    name: "",
-    role: "",
-    location: "",
-    email: "",
-    github: "",
-    linkedIn: "",
-    userFile: null,
-    bio: "",
-    profileImage: "",
-    followers: 0,
-    following: 0,
-  };
-  
   const [editedProfileData, setEditedProfileData] = useState<
     ProfileData & { userFile: null | File }
-  >(profileObject);
-
-  const postObject = {
-    id: "",
-    content: "",
-    imageUrl: "",
-    imageFile: null,
-    created_at: "",
-    authorName: "",
-    authorImage: "",
-  };
+  >({} as ProfileData & { userFile: null | File });
 
   const [postErr, setPostErr] = useState<PostError>({
     content: "",
     imageUrl: "",
   });
+
   const [newPost, setNewPost] = useState<Post & { imageFile: null | File }>(
-    postObject
+    {} as Post & { imageFile: null | File }
   );
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -112,7 +92,7 @@ export default function User() {
   const validateProfileData = (
     data: ProfileData & { userFile: null | File }
   ) => {
-    let errors: { [key in keyof typeof profileObject]?: string } = {};
+    let errors: { [key in keyof typeof editedProfileData]?: string } = {};
     if (!data.name?.trim()) errors.name = "Name is required";
     if (data.name?.length > 50) errors.name = "Only 50 characters are allowed";
     if (!data.role?.trim()) errors.role = "Role is required";
@@ -200,7 +180,7 @@ export default function User() {
 
   function handleCancelDialog() {
     setCreateDialog("");
-    setNewPost(postObject);
+    setNewPost(newPost);
   }
 
   async function getAllPosts(userId: string) {
@@ -257,7 +237,7 @@ export default function User() {
 
     await updatePost(updatedPost, user ? user.id : "");
     await getAllPosts(user ? user.id : "");
-    setNewPost(postObject);
+    setNewPost(newPost);
     setCreateDialog("");
     setIsLoading(false);
   }
@@ -297,8 +277,10 @@ export default function User() {
   }
 
   useEffect(() => {
-    getUserProfile(user ? user.id : "");
-    getAllPosts(user ? user.id : "");
+    if (!user && !profileId) return;
+    const id = (profileId ? profileId : user?.id) || "";
+    getUserProfile(id);
+    getAllPosts(id);
   }, []);
 
   useEffect(() => {
@@ -312,22 +294,28 @@ export default function User() {
   ) : (
     <div className="w-full min-h-screen flex flex-col justify-center items-center">
       <div className="h-64 p-4 relative text-white w-full bg-gradient-to-r from-blue-500 to-purple-600 flex flex-col">
-        <div className="cursor-pointer flex ml-auto flex-row gap-5">
-          <span>Follow</span>
-          <span
-            onClick={() => {
-              if (isEditing) {
-                handleEditProfile();
-              } else {
-                setIsEditing(true);
-              }
-            }}
-          >
-            {isEditing ? "Save" : "Edit"} Profile
-          </span>
-          <LogOut onClick={handleSignOut} />
-        </div>
-        <div className="flex justify-center items-center">
+        {!profileId && (
+          <div className="cursor-pointer flex ml-auto flex-row gap-5">
+            <span>Follow</span>
+            <span
+              onClick={() => {
+                if (isEditing) {
+                  handleEditProfile();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+            >
+              {isEditing ? "Save" : "Edit"} Profile
+            </span>
+            <LogOut onClick={handleSignOut} />
+          </div>
+        )}
+        <div
+          className={`flex justify-center items-center ${
+            profileId ? "mt-5" : ""
+          }`}
+        >
           <ProfileCard
             editedProfileData={editedProfileData}
             onValueChange={onValueChange}
@@ -365,12 +353,14 @@ export default function User() {
       <div className={`postContainer mb-12 ${isEditing ? "mt-100" : "mt-80"}`}>
         <div className="flex justify-between items-center">
           <h2 className="text-2xl text-zinc-600 font-bold mb-6">Posts</h2>
-          <Button
-            className=" text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            onClick={() => setCreateDialog("create")}
-          >
-            Create Post
-          </Button>
+          {!profileId && (
+            <Button
+              className=" text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              onClick={() => setCreateDialog("create")}
+            >
+              Create Post
+            </Button>
+          )}
         </div>
         <div className="space-y-6">
           {posts.length > 0 ? (
@@ -379,17 +369,26 @@ export default function User() {
                 key={post.id}
                 id={post.id}
                 userImage={post.authorImage || ""}
+                userId={user?.id || ""}
                 username={post.authorName}
                 content={post.content}
                 imageUrl={post.imageUrl}
-                onEditToggle={() => {
-                  setCreateDialog("edit");
-                  setSelectedPost(post);
-                }}
-                onDeleteToggle={() => {
-                  setDeleteDialog(true);
-                  setSelectedPost(post);
-                }}
+                onEditToggle={
+                  !profileId
+                    ? () => {
+                        setCreateDialog("edit");
+                        setSelectedPost(post);
+                      }
+                    : undefined
+                }
+                onDeleteToggle={
+                  !profileId
+                    ? () => {
+                        setDeleteDialog(true);
+                        setSelectedPost(post);
+                      }
+                    : undefined
+                }
               />
             ))
           ) : (

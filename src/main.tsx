@@ -5,9 +5,9 @@ import React from "react";
 import { AppProvider } from "@contexts/AppContext.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <AppProvider>
       <App />
     </AppProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

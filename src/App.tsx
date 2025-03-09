@@ -51,7 +51,7 @@ export const applicationRoutes: RouteObject[] = [
       { path: "/", element: <Dashboard /> },
       { path: "/feed", element: <Feed /> },
       { path: "/auth", element: <Auth /> },
-      { path: "/user", element: <User /> },
+      { path: "/user/:id?", element: <User /> },
     ],
   },
 ];
