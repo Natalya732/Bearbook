@@ -1,3 +1,4 @@
+import { generateUUID } from "@utils/helper";
 import supabase from "@utils/supabase";
 import toast from "react-hot-toast";
 
@@ -59,3 +60,42 @@ export async function getAllFollowingPosts(userId: string, page: number) {
 
   return pageContent;
 }
+
+export const getUnfollowedUsers = async (userId: string) => {
+  const { data: followedUsers } = await supabase
+    .from("Follows")
+    .select("following_id")
+    .eq("follower_id", userId);
+
+  const followedUserIds = followedUsers?.map((f) => f.following_id) || [];
+
+  const { data: unfollowedUsers } = await supabase
+    .from("User")
+    .select("*")
+    .not("id", "in", `(${followedUserIds.join(",")})`)
+    .neq("id", userId);
+
+  return unfollowedUsers;
+};
+
+export const followUser = async (followerId: string, followingId: string) => {
+  if (!followerId || !followingId) {
+    return { error: "invalid user ids" };
+  }
+
+  const { data, error } = await supabase.from("Follows").insert([
+    {
+      follower_id: followerId,
+      following_id: followingId,
+      id: generateUUID(),
+      created_at: new Date().toISOString(),
+    },
+  ]);
+
+  if (error) {
+    console.log("error following user", error.message);
+    return { error: error.message };
+  }
+
+  return { data, message: "Followed Successfully" };
+};
