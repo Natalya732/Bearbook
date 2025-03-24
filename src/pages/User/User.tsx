@@ -9,7 +9,7 @@ import { generateUUID, uploadImage } from "@utils/helper";
 import { Button } from "@components/ui/button";
 import ProfileCard from "./ProfileCard";
 import CreatePostDialog from "../PostCard/CreatePostDialog";
-import "@styles/User.scss";
+import "@/styles/User.scss";
 import DeleteDialog from "@pages/PostCard/DeleteDialog";
 import Footer from "@components/layouts/Footer";
 import { fetchUserProfile, signOut, updateUserTable } from "@/services/UserApi";
