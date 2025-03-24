@@ -19,6 +19,6 @@ export default defineConfig({
     outDir: "dist",
   },
   server: {
-    hmr: process.env.NODE_ENV !== "production",
+    hmr: true,
   },
 });
