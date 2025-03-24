@@ -56,7 +56,7 @@ export async function insertPost(newPost: postApiType, userId: string) {
 }
 
 
-export async function updatePost(post: postApiType, userId: string) {
+export async function updatePost(post: postApiType) {
     try {
         const { error } = await supabase
             .from("Posts")

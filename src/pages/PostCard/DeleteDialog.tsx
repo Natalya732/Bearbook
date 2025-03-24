@@ -28,22 +28,6 @@ export default function DeleteDialog({
   
   const [isLoading, setIsLoading] = useState(false);
 
-  const deletePost = async (postId: string) => {
-    if (!postId) return;
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.from("Posts").delete().eq("id", postId);
-      setIsLoading(false);
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      handleCancel();
-      toast.success("Successfully deleted");
-    } catch (err) {
-      toast.error("Failed to delete Post");
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
