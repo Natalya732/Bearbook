@@ -15,6 +15,9 @@ export default defineConfig({
       "@contexts": "/src/contexts",
     },
   },
+  build: {
+    outDir: "dist",
+  },
   server: {
     hmr: process.env.NODE_ENV !== "production",
   },
