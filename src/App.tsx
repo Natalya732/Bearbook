@@ -63,7 +63,7 @@ export default function App() {
 
   useEffect(() => {
     if (window.location.pathname !== "/auth" && !user) {
-      window.location.replace("http://localhost:5173/auth");
+      window.location.replace("/auth");
     }
   }, []);
 
