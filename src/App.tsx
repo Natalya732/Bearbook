@@ -9,7 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Feed from "./pages/Feed/Feed";
 import Auth from "./pages/Auth/Auth";
 
-import { useApp } from "@contexts/AppContext";
+// import { useApp } from "@contexts/AppContext";
 import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import supabase from "@utils/supabase";
@@ -59,13 +59,13 @@ export const applicationRoutes: RouteObject[] = [
 const myRoutes = createBrowserRouter(applicationRoutes);
 
 export default function App() {
-  const { user } = useApp();
+  // const { user } = useApp();
 
-  useEffect(() => {
-    if (window.location.pathname !== "/auth" && !user) {
-      window.location.replace("/auth");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (window.location.pathname !== "/auth" && !user) {
+  //     window.location.replace("/auth");
+  //   }
+  // }, []);
 
   return (
     <>
