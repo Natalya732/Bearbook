@@ -76,7 +76,7 @@ export async function updatePost(post: postApiType) {
 }
 
 
-export async function deletePost(postId: string, userId: string) {
+export async function deletePost(postId: string) {
     try {
         const { error } = await supabase.from("Posts").delete().eq("id", postId);
         if (error) {

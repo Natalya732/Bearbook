@@ -235,7 +235,7 @@ export default function User() {
       author: editedProfileData.id,
     };
 
-    await updatePost(updatedPost, user ? user.id : "");
+    await updatePost(updatedPost);
     await getAllPosts(user ? user.id : "");
     setNewPost(newPost);
     setCreateDialog("");
@@ -270,7 +270,7 @@ export default function User() {
   async function handleDeletePost(postId: string) {
     if (!postId) return;
     setIsLoading(true);
-    await deletePost(postId, user?.id || "");
+    await deletePost(postId);
     setDeleteDialog(false);
     await getAllPosts(user ? user.id : "");
     setIsLoading(false);
