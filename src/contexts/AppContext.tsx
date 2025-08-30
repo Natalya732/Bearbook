@@ -1,3 +1,4 @@
+import LayoutProvider from "@components/layouts/layout";
 import { User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -23,10 +24,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("user", JSON.stringify(user));
   }, [user]);
 
-  
   return (
     <AppContext.Provider value={{ user, updateUser }}>
-      {children}
+      <LayoutProvider>{children}</LayoutProvider>
     </AppContext.Provider>
   );
 };

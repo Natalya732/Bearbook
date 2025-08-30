@@ -18,7 +18,7 @@ export default function SuggestedUser({
 
   async function getSuggestedUsers() {
     const res = await getUnfollowedUsers(user?.id || "");
-    console.log("res", res);
+
     if (res) {
       const updatedUsers = res.map((item) => ({
         ...item,
