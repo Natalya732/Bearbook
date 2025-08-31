@@ -16,6 +16,7 @@ import supabase from "@utils/supabase";
 import { Session } from "@supabase/supabase-js";
 import User from "@pages/User/User";
 import Error from "@pages/Error/Error";
+import LayoutProvider from "@components/layouts/layout";
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +38,13 @@ const ProtectedRoute: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  return session ? <Outlet /> : <Auth />;
+  return session ? (
+    <LayoutProvider>
+    <Outlet />
+    </LayoutProvider>
+  ) : (
+    <Auth />
+  );
 };
 
 export const applicationRoutes: RouteObject[] = [

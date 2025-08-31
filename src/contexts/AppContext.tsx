@@ -1,4 +1,3 @@
-import LayoutProvider from "@components/layouts/layout";
 import { User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -26,7 +25,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AppContext.Provider value={{ user, updateUser }}>
-      <LayoutProvider>{children}</LayoutProvider>
+      {children}
     </AppContext.Provider>
   );
 };

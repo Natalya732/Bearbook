@@ -20,6 +20,7 @@ import {
   updatePost,
 } from "@/services/PostApi";
 import { useParams } from "react-router-dom";
+import { useGetProfile } from "@hooks/getProfile";
 
 export const LoaderProfile = () => {
   return (
@@ -63,16 +64,11 @@ export default function User() {
 
   const [posts, setPosts] = useState<Post[]>([]);
 
-  //   ******************************* Integration *****************************
+  // ✅ Move the hook call to the top level - this is the correct way
+  const id = (profileId ? profileId : user?.id) || "";
+  const { profile, isLoading: profileLoading } = useGetProfile(id);
 
-  async function getUserProfile(userId: string) {
-    setIsLoading(true);
-    const data = await fetchUserProfile(userId);
-    if (data) {
-      setEditedProfileData({ ...data, userFile: null });
-    }
-    setIsLoading(false);
-  }
+  //   ******************************* Integration *****************************
 
   async function handleFileUpload(file: File | null, bucket: string) {
     if (!file || !(file instanceof File)) return "";
@@ -278,10 +274,12 @@ export default function User() {
 
   useEffect(() => {
     if (!user && !profileId) return;
-    const id = (profileId ? profileId : user?.id) || "";
-    getUserProfile(id);
+    console.log("id", id);
+    // ✅ Use the profile data from the hook instead of calling the hook inside useEffect
+    setEditedProfileData(profile);
+    setIsLoading(profileLoading);
     getAllPosts(id);
-  }, []);
+  }, [profile, profileLoading, id, user, profileId]);
 
   useEffect(() => {
     if (createDialog === "edit" && selectedPost) {

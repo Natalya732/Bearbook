@@ -17,8 +17,7 @@ interface Post {
 }
 
 export default function Dashboard() {
-  const { user } = useApp();
-  const navigate = useNavigate();
+  const { user} = useApp();
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
@@ -36,12 +35,13 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex gap-5 py-8 px-4">
+    <div className="min-h-screen w-full flex gap-5\ py-8 px-4 scroll-smooth scrollbar-hide">
       <div className="w-full">
         <InfiniteScroll
           dataLength={posts.length}
           next={fetchMorePosts}
           hasMore={hasMore}
+          key={user?.id || ""}
           loader={
             <div className="flex justify-center items-center p-4">
               <Loader className="animate-spin text-blue-500" />
@@ -53,6 +53,8 @@ export default function Dashboard() {
             </div>
           }
         >
+
+
           <div className="space-y-6">
             {posts.map((post) => (
               <PostCard
