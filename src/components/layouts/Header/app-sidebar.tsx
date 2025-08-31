@@ -1,4 +1,4 @@
-import { Book, Home, Inbox, Loader, LogOut, MessagesSquare, Phone, Search } from "lucide-react";
+import { Book, Home, Loader, LogOut, MessagesSquare, Phone, Search } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,

@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import PostCard from "./PostCard/PostCard";
 import { Loader } from "react-feather";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@components/ui/button";
 import { useApp } from "@contexts/AppContext";
 import { getAllFollowingPosts } from "@/services/FollowsApi";
 import SuggestedUser from "./SuggestedUser";

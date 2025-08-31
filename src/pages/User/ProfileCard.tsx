@@ -3,7 +3,7 @@ import EditComponent from "./EditUser";
 import { GitHub, Linkedin, Mail, MapPin } from "react-feather";
 import { ProfileData } from "@utils/definitions";
 import { Button } from "@components/ui/button";
-import { User, UserIcon } from "lucide-react";
+import { UserIcon } from "lucide-react";
 
 interface ProfileCardProps {
   editedProfileData: ProfileData & { userFile: null | File };
@@ -64,7 +64,7 @@ export default function ProfileCard({
             </>
           ) : (
             <div className=" w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-              <UserIcon className="w-12 h-12 text-gray-500"/>
+              <UserIcon className="w-12 h-12 text-gray-500" />
             </div>
           )}
         </div>
