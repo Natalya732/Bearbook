@@ -24,7 +24,7 @@ import { useGetProfile } from "@hooks/getProfile";
 
 export const LoaderProfile = () => {
   return (
-    <div className="flex justify-center items-center p-4 h-screen">
+    <div className="flex justify-center w-full items-center p-4 h-screen">
       <Loader className="w-8 h-8 animate-spin text-blue-500" />
     </div>
   );

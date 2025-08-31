@@ -3,6 +3,7 @@ import EditComponent from "./EditUser";
 import { GitHub, Linkedin, Mail, MapPin } from "react-feather";
 import { ProfileData } from "@utils/definitions";
 import { Button } from "@components/ui/button";
+import { User, UserIcon } from "lucide-react";
 
 interface ProfileCardProps {
   editedProfileData: ProfileData & { userFile: null | File };
@@ -46,18 +47,26 @@ export default function ProfileCard({
           className="imageContainer"
           onClick={() => isEditing && imgRef.current && imgRef.current.click()}
         >
-          <input
-            style={{ display: "none" }}
-            type="file"
-            ref={imgRef}
-            onChange={(e) => {
-              const file = e.target.files || null;
-              if (file && file.length) {
-                onValueChange("userFile", file[0]);
-              }
-            }}
-          />
-          <img src={imageUrl || editedProfileData.profileImage} />
+          {imageUrl || editedProfileData.profileImage ? (
+            <>
+              <input
+                style={{ display: "none" }}
+                type="file"
+                ref={imgRef}
+                onChange={(e) => {
+                  const file = e.target.files || null;
+                  if (file && file.length) {
+                    onValueChange("userFile", file[0]);
+                  }
+                }}
+              />
+              <img src={imageUrl || editedProfileData.profileImage} />
+            </>
+          ) : (
+            <div className=" w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+              <UserIcon className="w-12 h-12 text-gray-500"/>
+            </div>
+          )}
         </div>
         <div className="personalData w-full flex-col gap-5">
           <div className="flex w-full justify-between">

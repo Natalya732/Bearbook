@@ -1,3 +1,4 @@
+import { User } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import {
   Clipboard,
@@ -70,17 +71,20 @@ const PostCard: React.FC<PostCardProps> = ({
   ];
 
   return (
-    <div key={id} className="bg-white rounded-lg shadow-md p-4 mb-4 relative">
+    <div key={id} className="bg-white rounded-lg border-gray-200 border p-4 mb-4 relative">
       <div className="flex items-center justify-between mb-4">
         <div
           className="flex items-center space-x-3 cursor-pointer"
           onClick={() => navigate(`/user/${userId}`)}
         >
-          <img
+         {userImage ? <img
             src={userImage}
             alt={username}
             className="w-10 h-10 rounded-full object-cover"
-          />
+          /> : <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+            <User/>
+            </div>
+            }
           <div>
             <h3 className="font-semibold text-gray-800">{username}</h3>
           </div>
