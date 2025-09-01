@@ -29,12 +29,12 @@ const items = [
   },
   {
     title: "Chats",
-    url: "#",
+    url: "/chat",
     icon: MessagesSquare,
   },
   {
     title: "About",
-    url: "#",
+    url: "/about",
     icon: Book,
   },
   {

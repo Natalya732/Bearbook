@@ -8,6 +8,7 @@ import {
 import Dashboard from "./pages/Dashboard";
 import Feed from "./pages/Feed/Feed";
 import Auth from "./pages/Auth/Auth";
+import About from "./features/About/About";
 
 // import { useApp } from "@contexts/AppContext";
 import { Toaster } from "react-hot-toast";
@@ -18,6 +19,7 @@ import User from "@pages/User/User";
 import Error from "@pages/Error/Error";
 import LayoutProvider from "@components/layouts/layout";
 import SearchPage from "./features/Search/Components/entry/SearchPage";
+import Chat from "./features/Chat/Components/entry/Chat";
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -61,6 +63,8 @@ export const applicationRoutes: RouteObject[] = [
       { path: "/auth", element: <Auth /> },
       { path: "/search", element: <SearchPage /> },
       { path: "/user/:id?", element: <User /> },
+      { path: "/chat", element: <Chat /> },
+      { path: "/about", element: <About /> },
     ],
   },
 ];
