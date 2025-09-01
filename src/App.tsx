@@ -17,6 +17,7 @@ import { Session } from "@supabase/supabase-js";
 import User from "@pages/User/User";
 import Error from "@pages/Error/Error";
 import LayoutProvider from "@components/layouts/layout";
+import SearchPage from "./features/Search/Components/entry/SearchPage";
 
 const ProtectedRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ export const applicationRoutes: RouteObject[] = [
       { path: "/", element: <Dashboard /> },
       { path: "/feed", element: <Feed /> },
       { path: "/auth", element: <Auth /> },
+      { path: "/search", element: <SearchPage /> },
       { path: "/user/:id?", element: <User /> },
     ],
   },
