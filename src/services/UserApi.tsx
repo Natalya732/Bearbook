@@ -31,7 +31,6 @@ export async function fetchUserProfile(userId: string): Promise<ProfileData | nu
 
 export async function updateUserTable({ userId, data }: { userId: string, data: ProfileData }) {
     try {
-        console.log("entered function")
         const { error } = await supabase.from("User").update({
             ...data
         }).eq("id", userId);
