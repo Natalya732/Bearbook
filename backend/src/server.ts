@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import { createServer } from "http";
+import routes from "./routes/index.js";
 
 dotenv.config();
 
@@ -19,6 +20,12 @@ app.use(
 
 app.use(express.json());
 
+// Routes
+app.use("/api", routes);
+
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 // Connect to MongoDB
 const connectDB = async () => {
   try {
